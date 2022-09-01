@@ -1,40 +1,62 @@
 {
-  "typescript": true,
-  "commands": [
-    "./commands",
-    "@adonisjs/core/build/commands/index.js",
-    "@adonisjs/repl/build/commands"
-  ],
-  "exceptionHandlerNamespace": "App/Exceptions/Handler",
-  "aliases": {
-    "App": "app",
-    "Config": "config",
-    "Database": "database",
-    "Contracts": "contracts"
-  },
-  "preloads": [
-    "./start/routes",
-    "./start/kernel"
-  ],
-  "providers": [
-    "./providers/AppProvider",
-    "@adonisjs/core"
-  ],
-  "aceProviders": [
-    "@adonisjs/repl"
-  ],
-  "tests": {
-    "suites": [
-      {
-        "name": "functional",
-        "files": [
-          "tests/functional/**/*.spec(.ts|.js)"
-        ],
-        "timeout": 60000
-      }
+    "typescript": true,
+    "metaFiles": [
+        ".env",
+        {
+            "pattern": "public/**",
+            "reloadServer": false
+        },
+        {
+            "pattern": "resources/views/**/*.edge",
+            "reloadServer": false
+        }
+    ],
+    "commands": [
+        "./commands",
+        "@adonisjs/core/build/commands",
+        "@adonisjs/repl/build/commands",
+        "@adonisjs/lucid/build/commands",
+        "@adonisjs/bouncer/build/commands",
+        "adonis5-swagger/build/commands"
+    ],
+    "exceptionHandlerNamespace": "App/Exceptions/Handler",
+    "aliases": {
+        "App": "app",
+        "Config": "config",
+        "Database": "database",
+        "Contracts": "contracts",
+        "Resources": "resources"
+    },
+    "preloads": [
+        "./start/routes",
+        "./start/kernel",
+        "./start/bouncer"
+    ],
+    "providers": [
+        "./providers/AppProvider",
+        "@adonisjs/core",
+        "@adonisjs/auth",
+        "@adonisjs/lucid",
+        "@adonisjs/bouncer",
+        "@adonisjs/drive-s3",
+        "@adonisjs/view",
+        "adonis5-swagger"
+    ],
+    "aceProviders": [
+        "@adonisjs/repl"
+    ],
+    "tests": {
+        "suites": [
+            {
+                "name": "functional",
+                "files": [
+                    "tests/functional/**/*.spec(.ts|.js)"
+                ],
+                "timeout": 60000
+            }
+        ]
+    },
+    "testProviders": [
+        "@japa/preset-adonis/TestsProvider"
     ]
-  },
-  "testProviders": [
-    "@japa/preset-adonis/TestsProvider"
-  ]
 }
