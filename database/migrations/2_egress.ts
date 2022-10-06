@@ -1,6 +1,6 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema';
 
-export default class Users extends BaseSchema
+export default class Egress extends BaseSchema
 {
     protected tableName = 'egress';
 
@@ -9,13 +9,20 @@ export default class Users extends BaseSchema
         this.schema.createTable(this.tableName, (table) =>
         {
             table.increments('id').primary();
-            table.string('name', 255).notNullable();
-            table.integer('CGM_id').unique().notNullable();
-            table.integer('arq_id').unique().notNullable();
+            table.string('name', 255);
+            table.integer('CGM_id').unique();
+            table.integer('arq_id').unique();
 
-            table.dateTime('birth_date').notNullable();
+            table.dateTime('birth_date');
 
-            table.string('responsible_name', 255).nullable();
+            table.string('responsible_name', 255);
+
+            table
+                .integer('last_edit_by')
+                .unsigned()
+                .references('id')
+                .inTable('users')
+                .onDelete('CASCADE');
         });
     }
 
