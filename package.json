@@ -1,9 +1,9 @@
 {
-    "name": "tsurus-api",
+    "name": "tesserato-api",
     "version": "1.0.0",
     "private": true,
     "engines": {
-        "node": "18.x",
+        "node": "16.x",
         "npm": "7.x"
     },
     "scripts": {

@@ -44,7 +44,7 @@ const corsConfig: CorsConfig = {
    |                     one of the above values.
    |
    */
-    origin: true,
+    origin: '*',
 
     /*
    |--------------------------------------------------------------------------
@@ -132,3 +132,4 @@ const corsConfig: CorsConfig = {
 };
 
 export default corsConfig;
+
