@@ -4,5 +4,5 @@ import Route from '@ioc:Adonis/Core/Route';
 Route.group(() =>
 {
     // GET /hierarchy
-    Route.get('/list', 'HierarchyController.index');
-}).prefix('/hierarchy');
+    Route.get('list', 'HierarchyController.index');
+}).prefix('hierarchy');

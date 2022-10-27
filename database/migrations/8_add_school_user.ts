@@ -15,9 +15,6 @@ export default class Users extends BaseSchema
                 .references('id')
                 .inTable('schools')
                 .onDelete('CASCADE');
-
-            /* first_acess date */
-            table.dateTime('first_acess').nullable();
         });
     }
 

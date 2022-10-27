@@ -1,9 +1,15 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
+import Hierarchy from 'App/Models/Hierarchy';
 
 export default class HierarchyController
 {
-    public async index ({ auth, request, response }: HttpContextContract)
+    public async index ({ response }: HttpContextContract)
     {
-        return 'Hello World';
+        let hierarchies = await Hierarchy
+            .query()
+            .preload('users')
+            .orderBy('id', 'asc');
+
+        return response.ok(hierarchies);
     }
 }

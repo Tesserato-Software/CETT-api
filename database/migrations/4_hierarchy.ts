@@ -2,7 +2,7 @@ import BaseSchema from '@ioc:Adonis/Lucid/Schema';
 
 export default class Hierarchy extends BaseSchema
 {
-    protected tableName = 'hierarchy';
+    protected tableName = 'hierarchies';
 
     public async up ()
     {

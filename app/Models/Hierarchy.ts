@@ -20,7 +20,7 @@ export default class Hierarchy extends BaseModel
     public school_id: number;
 
     /* relations */
-    @hasMany(() => User, { foreignKey: 'hirarchy_id' })
+    @hasMany(() => User, { foreignKey: 'hierarchy_id' })
     public users: HasMany<typeof User>;
 
     @belongsTo(() => School, {

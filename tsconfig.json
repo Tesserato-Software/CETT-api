@@ -1,31 +1,31 @@
 {
-	"extends": "./node_modules/adonis-preset-ts/tsconfig",
-	"include": ["**/*"],
-	"exclude": ["node_modules", "build"],
-	"compilerOptions": {
+    "extends": "./node_modules/adonis-preset-ts/tsconfig",
+    "include": ["**/*"],
+    "exclude": ["node_modules", "build"],
+    "compilerOptions": {
 		"experimentalDecorators": true,
-		"outDir": "build",
-		"rootDir": "./",
-		"sourceMap": true,
+        "outDir": "build",
+        "rootDir": "./",
+        "sourceMap": true,
 		"target": "ESNext",
-		"resolveJsonModule": true,
-		"paths": {
-			"App/*": ["./app/*"],
-			"Config/*": ["./config/*"],
-			"Contracts/*": ["./contracts/*"],
-			"Database/*": ["./database/*"],
-			"Resources/*": ["./resources/*"],
-			"Services/*": ["./services/*"]
-		},
-		"types": [
-			"@adonisjs/core",
-			"@adonisjs/repl",
-			"@adonisjs/auth",
-			"@adonisjs/lucid",
-			"@adonisjs/bouncer",
-			"@adonisjs/drive-s3",
-			"@adonisjs/view",
-			"adonis5-swagger"
-		]
-	}
+        "resolveJsonModule": true,
+        "paths": {
+            "App/*": ["./app/*"],
+            "Config/*": ["./config/*"],
+            "Contracts/*": ["./contracts/*"],
+            "Database/*": ["./database/*"],
+            "Resources/*": ["./resources/*"],
+            "Services/*": ["./services/*"]
+        },
+        "types": [
+            "@adonisjs/core",
+            "@adonisjs/repl",
+            "@adonisjs/auth",
+            "@adonisjs/lucid",
+            "@adonisjs/bouncer",
+            "@adonisjs/drive-s3",
+            "@adonisjs/view",
+            "adonis5-swagger"
+        ]
+    }
 }

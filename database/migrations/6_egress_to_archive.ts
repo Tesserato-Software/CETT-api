@@ -2,7 +2,7 @@ import BaseSchema from '@ioc:Adonis/Lucid/Schema';
 
 export default class Egress extends BaseSchema
 {
-    protected tableName = 'egress';
+    protected tableName = 'egresses';
 
     public async up ()
     {

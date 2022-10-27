@@ -18,18 +18,18 @@ export default class User extends BaseModel
     public email: string;
 
     @column()
-    public hirarchy_id: number;
+    public hierarchy_id: number;
 
     @column()
     public school_id: number;
 
     @column()
-    public first_acess: DateTime;
+    public first_access: DateTime;
 
     /* relations */
     @belongsTo(() => Hierarchy, {
         localKey: 'id',
-        foreignKey: 'hirarchy_id',
+        foreignKey: 'hierarchy_id',
     })
     public hirarchy: BelongsTo<typeof Hierarchy>;
 
