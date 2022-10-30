@@ -5,4 +5,4 @@ Route.group(() =>
 {
     // GET /hierarchy
     Route.get('list', 'HierarchyController.index');
-}).prefix('hierarchy');
+}).prefix('hierarchy').middleware(['auth']);
