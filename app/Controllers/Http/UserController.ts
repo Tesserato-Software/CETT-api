@@ -29,11 +29,24 @@ export default class UserController
         {
             for (let user of users)
             {
-                await Database
-                    .from('users')
-                    .where('id', user)
-                    .update({ hierarchy_id:hierarchy_id });
+                try
+                {
+                    await Database
+                        .from('users')
+                        .where('id', user)
+                        .firstOrFail();
+                }
+                catch (error)
+                {
+                    return response.badRequest(`user ${user} not found`);
+                }
             }
+
+            await Database
+                .from('users')
+                .whereIn('id', users)
+                .update({ hierarchy_id });
+
             return response.ok('updated');
         }
         catch (error)
