@@ -38,4 +38,22 @@ export default class EgressController
             return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
+
+    public async AttachArchives ({ response, auth, request }: HttpContextContract)
+    {
+        let { user } = auth;
+
+        if (!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+        try
+        {
+            let {egress} = request.all();
+
+            
+
+
+        }
+    }
 }
