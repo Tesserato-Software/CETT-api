@@ -1,6 +1,6 @@
 /* eslint-disable one-var */
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
-import Hierarchy from 'App/Models/Hierarchy';
+import Database from '@ioc:Adonis/Lucid/Database';
 
 export default class HierarchyController
 {
@@ -13,12 +13,41 @@ export default class HierarchyController
             return response.unauthorized({ message: 'Unauthorized' });
         }
 
-        let hierarchies = await Hierarchy
-            .query()
-            .preload('users')
-            .where('school_id', user.school_id)
-            .orderBy('id', 'asc');
+        try
+        {
+            let hierarchies = await Database
+                .from('hierarchies')
+                .select(
+                    'hierarchies.id',
+                    'hierarchies.name',
+                    Database.raw(`
+                        CASE WHEN COUNT(users.id) > 0
+                        THEN (
+                            json_agg(
+                                json_build_object(
+                                    'id', users.id,
+                                    'full_name', users.full_name,
+                                    'email', users.email,
+                                    'hierarchy_id', users.hierarchy_id,
+                                    'school_id', users.school_id,
+                                    'first_access', users.first_access
+                                )
+                            )
+                        )
+                        ELSE '[]'
+                        END AS users
+                    `)
+                )
+                .where('hierarchies.school_id', user.school_id)
+                .leftJoin('users', 'users.hierarchy_id', 'hierarchies.id')
+                .groupBy('hierarchies.id');
 
-        return response.ok(hierarchies);
+            return response.ok(hierarchies);
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
     }
 }
