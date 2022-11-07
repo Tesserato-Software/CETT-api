@@ -39,7 +39,32 @@ export default class EgressController
         }
     }
 
-    public async AttachArchives ({ response, auth, request }: HttpContextContract)
+    public async AttachArchives ({ response, auth, request, params }: HttpContextContract)
+    {
+        let { user } = auth,
+            archive_id = params.id,
+            {egress} = request.all();
+
+        if (!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+        try
+        {
+            await Database.from('egresses')
+                .where('egresses.id', egress)
+                .update({ archive_id });
+
+            return response.ok('updated');
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError('Arquivo => ' + archive_id + ' egresse => ' + egress);
+        }
+    }
+
+    public async DettachArchives ({ response, auth, request }: HttpContextContract)
     {
         let { user } = auth;
 
@@ -50,10 +75,17 @@ export default class EgressController
         try
         {
             let {egress} = request.all();
+            await Database.from('egresses')
+                .whereIn('egresses.id', egress)
+                .update({ archive_id: null });
 
-            
-
-
+            return response.ok('updated');
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError('Internal Server Error');
         }
     }
 }
+
