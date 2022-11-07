@@ -52,8 +52,8 @@ export default class EgressController
         try
         {
             await Database.from('egresses')
-                .where('egresses.id', egress)
-                .update({ archive_id });
+                .whereIn('egresses.id', egress)
+                .update(archive_id);
 
             return response.ok('updated');
         }
