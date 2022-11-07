@@ -8,4 +8,5 @@ Route.group(() =>
     Route.get('dashboard-attach-egress','ArchiveController.DashBoardAttachEgress');
     // Patch /archive
     Route.patch('dettach-egress','ArchiveController.DettachEgress');
+    Route.patch('attach-egress/:id','ArchiveController.AttachEgress');
 }).prefix('archive').middleware(['auth']);

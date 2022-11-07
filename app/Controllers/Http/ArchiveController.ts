@@ -35,9 +35,10 @@ export default class ArchiveController
         }
     }
 
-    public async AttachEgress ({ response, auth, request }: HttpContextContract)
+    public async AttachEgress ({ response, auth, request,params }: HttpContextContract)
     {
         let { user } = auth,
+            archive_id = params.id,
             { egress } = request.all();
 
         if (!user)
@@ -54,7 +55,7 @@ export default class ArchiveController
         {
             await Database.from('egresses')
                 .whereIn('id', egress)
-                .update({ archive_id: null });
+                .update({ archive_id});
 
             return response.ok('updated');
         }
