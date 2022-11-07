@@ -67,7 +67,7 @@ export default class EgressController
         catch (error)
         {
             console.error(error);
-            return response.internalServerError('Arquivo => ' + archive_id + ' egresse => ' + egress);
+            return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
 
@@ -97,7 +97,7 @@ export default class EgressController
         catch (error)
         {
             console.error(error);
-            return response.internalServerError('Internal Server Error');
+            return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
 }
