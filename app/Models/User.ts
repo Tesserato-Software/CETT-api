@@ -38,4 +38,15 @@ export default class User extends BaseModel
         foreignKey: 'school_id',
     })
     public school: BelongsTo<typeof School>;
+
+    public static HashPassword (pass: string)
+    {
+        let pswC = pass.split('');
+        for (let i = pswC.length; i > 0; i--)
+        {
+            pswC[i] = pswC[-i];
+            let pswE = parseInt(pswC[i], 10);
+            return pswE;
+        }
+    }
 }

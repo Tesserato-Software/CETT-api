@@ -6,4 +6,6 @@ Route.group(() =>
 {
     // GET /user
     Route.post('user-hierarchy/:id', 'UserController.AttachHierarchy');
+    Route.post('psw-fa', 'UserController.PswFirstAcess');
+    Route.post('psw-mod', 'UserController.PswMod');
 }).prefix('user').middleware(['auth']);
