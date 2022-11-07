@@ -7,6 +7,8 @@ import Database from '@ioc:Adonis/Lucid/Database';
 import './routes/Hierarchy';
 import './routes/Auth';
 import './routes/Archive';
+import './routes/User';
+
 // Health Check
 Route.get('health', async ({ response }) =>
 {
