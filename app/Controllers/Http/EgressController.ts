@@ -43,17 +43,24 @@ export default class EgressController
     {
         let { user } = auth,
             archive_id = params.id,
-            {egress} = request.all();
+            { egress } = request.all();
 
         if (!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
+
+        if (!egress || !egress?.length || egress.find(e => isNaN(+e)))
+        {
+            return response.badRequest({ message: 'Bad Request' });
+        }
+
         try
         {
-            await Database.from('egresses')
-                .whereIn('egresses.id', egress)
-                .update(archive_id);
+            await Database
+                .from('egresses')
+                .whereIn('id', egress)
+                .update({ archive_id });
 
             return response.ok('updated');
         }
@@ -66,17 +73,23 @@ export default class EgressController
 
     public async DettachArchives ({ response, auth, request }: HttpContextContract)
     {
-        let { user } = auth;
+        let { user } = auth,
+            { egress } = request.all();
 
         if (!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
+
+        if (!egress || !egress?.length || egress.find(e => isNaN(+e)))
+        {
+            return response.badRequest({ message: 'Bad Request' });
+        }
+
         try
         {
-            let {egress} = request.all();
             await Database.from('egresses')
-                .whereIn('egresses.id', egress)
+                .whereIn('id', egress)
                 .update({ archive_id: null });
 
             return response.ok('updated');
