@@ -85,37 +85,24 @@ export default class UserController
             return response.internalServerError({ error });
         }
     }
-    public async PswMod ({response, auth, request, params}: HttpContextContract)
+    public async PswMod ({response, auth, request}: HttpContextContract)
     {
-        let { user:currentuser } = auth,
-            password = params.password,
-            { users } = request.all();
+        let { user } = auth,
+            { password } = request.all();
 
-        if(!currentuser)
+        if(!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
+
         let pswE = User.HashPassword(password);
+
         try
         {
-            for (let user of users)
-            {
-                try
-                {
-                    await Database
-                        .from('users')
-                        .where('id', user)
-                        .firstOrFail();
-                }
-                catch (error)
-                {
-                    return response.badRequest(`user ${user} not found`);
-                }
-            }
             await Database
                 .from('users')
-                .whereIn('id', users)
-                .update({ password:pswE });
+                .where('id', user.id)
+                .update({ password: pswE });
 
             return response.ok('password updated');
         }
