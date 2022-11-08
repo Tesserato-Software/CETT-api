@@ -1,3 +1,4 @@
+import Database from '@ioc:Adonis/Lucid/Database';
 /* eslint-disable max-len */
 /* eslint-disable one-var */
 import BaseSeeder from '@ioc:Adonis/Lucid/Seeder';
@@ -23,6 +24,16 @@ export default class ExcelSeeder extends BaseSeeder
             row.Aniversário = DateTime.fromISO(getJsDateFromExcel(row.Aniversário).toISOString()).toFormat('yyyy-MM-dd');
 
             console.log('row ~ ', row);
+            // insere dados no banco 
+            await Database
+                .table('egresses')
+                .insert({
+                    name: row.Nome,
+                    CGM_id: row.CGM,
+                    arq_id: row.ID,
+                    birth_date: row.Aniversário,
+                    responsible_name: row.Responsável,
+                });
         }
     }
 }
