@@ -57,38 +57,25 @@ export default class UserController
             return response.internalServerError({ error });
         }
     }
-    public async PswFirstAcess ({response, auth, request, params}: HttpContextContract)
+    public async PswFirstAccess ({response, auth, request }: HttpContextContract)
     {
-        let { user:currentuser } = auth,
-            password = params.password,
-            time = DateTime.now(),
-            { users } = request.all();
+        let { user } = auth,
+            { password } = request.all(),
+            time = DateTime.now();
 
-        if(!currentuser)
+        if(!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
+
         let pswE = User.HashPassword(password);
+
         try
         {
-            for (let user of users)
-            {
-                try
-                {
-                    await Database
-                        .from('users')
-                        .where('id', user)
-                        .firstOrFail();
-                }
-                catch (error)
-                {
-                    return response.badRequest(`user ${user} not found`);
-                }
-            }
             await Database
                 .from('users')
-                .whereIn('id', users)
-                .update({ password:pswE, first_acess:time });
+                .where('id', user.id)
+                .update({ password:pswE, first_access:time });
 
             return response.ok('password set sucessfully');
         }
