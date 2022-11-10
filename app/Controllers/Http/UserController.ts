@@ -166,7 +166,7 @@ export default class UserController
 
         try
         {
-            await Database.table('users')
+            let userCreated = await Database.table('users')
                 .returning('id')
                 .insert({
                     full_name,
@@ -175,7 +175,7 @@ export default class UserController
                     hierarchy_id: role,
                 });
 
-            return response.ok('updated');
+            return response.ok({ userCreated });
         }
         catch (error)
         {
@@ -196,19 +196,43 @@ export default class UserController
             role
         );
 
-        if (!user)
+        if (!user_id)
         {
-            return response.unauthorized({ message: 'Unauthorized' });
+            return response.badRequest('user id must be a number');
         }
 
         if (isInvalidRegister)
         {
-            return response.badRequest({ message: 'Bad Request' });
+            return response.badRequest('Not valid register');
+        }
+
+        if (!user || !user.hierarchy_id)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+        else if (user && user.hierarchy_id)
+        {
+            try
+            {
+                let hierarchy = await Database.from('hierarchies')
+                    .where('id', user.hierarchy_id)
+                    .firstOrFail();
+
+                if (!hierarchy?.can_update)
+                {
+                    return response.unauthorized({ message: 'Unauthorized' });
+                }
+            }
+            catch (error)
+            {
+                console.error(error);
+                return response.internalServerError({ error });
+            }
         }
 
         try
         {
-            await Database.from('users')
+            let userUpdated = await Database.from('users')
                 .where('id', user_id)
                 .update({
                     full_name,
@@ -217,11 +241,64 @@ export default class UserController
                     hierarchy_id: role,
                 });
 
-            return response.ok('updated');
+            return response.ok({ userUpdated });
         }
         catch (error)
         {
             return response.internalServerError({ message: 'Internal Server Error' });
+        }
+    }
+
+    public async DeleteUsers ({ response, auth, params }: HttpContextContract)
+    {
+        const { user } = auth;
+        const user_id = params.id;
+
+        if (!user_id)
+        {
+            return response.badRequest('user id must be a number');
+        }
+
+        if (!user || !user.hierarchy_id)
+        {
+            return response.unauthorized({message: 'Unauthorized'});
+        }
+        else if (user && user.hierarchy_id)
+        {
+            try
+            {
+                let hierarchy = await Database.from('users')
+                    .where('id', user.hierarchy_id)
+                    .firstOrFail();
+
+                if (!hierarchy?.can_delete)
+                {
+                    return response.unauthorized({ message: 'Unauthorized'});
+                }
+            }
+            catch (error)
+            {
+                console.error(error);
+                return response.internalServerError({ error });
+            }
+        }
+
+        try
+        {
+            await Database.from('egress')
+                .where('last_edit_by', user_id)
+                .update({ last_edit_by: null });
+
+            await Database.from('users')
+                .where('id', user_id)
+                .delete();
+
+            return response.ok({});
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
         }
     }
 }
