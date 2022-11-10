@@ -267,7 +267,7 @@ export default class EgressController
         }
     }
 
-    public async DashboardAttachArchive ({ response, auth }: HttpContextContract)
+    public async DashboardAttachArchive ({ response, auth, params}: HttpContextContract)
     {
         let { user } = auth;
 
@@ -282,8 +282,10 @@ export default class EgressController
                 .select(
                     'egresses.id',
                     'egresses.name',
+                    'egresses.CGM_id',
                 )
-                .where('egresses.school_id', user.school_id)
+                .where('egresses.id', params.id)
+                .andWhere('egresses.school_id', user.school_id)
                 .groupBy('egresses.id');
 
             let archives = await Database.from('archives')
@@ -294,6 +296,41 @@ export default class EgressController
                 .groupBy('archives.id');
 
             return response.ok({egresses, archives});
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
+    }
+    public async DashboardDettachArchive ({response, auth, params}: HttpContextContract)
+    {
+        let { user } = auth;
+
+        if (!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        try
+        {
+            let egressesAndArchive = await Database.from('egresses')
+                .select(
+                    'egresses.id',
+                    'egresses.name',
+                    'egresses.CGM_id',
+                    'egresses.archive_id',
+                )
+                .where('egresses.id', params.id)
+                .andWhere('egresses.school_id', user.school_id)
+                .groupBy('egresses.id');
+
+            if (egressesAndArchive[0].archive_id === null)
+            {
+                return response.badRequest({message: 'Egresso não está anexado a nenhum arquivo'});
+            }
+
+            return response.ok({egressesAndArchive});
         }
         catch (error)
         {
