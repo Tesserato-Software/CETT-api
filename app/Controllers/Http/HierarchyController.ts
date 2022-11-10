@@ -50,4 +50,13 @@ export default class HierarchyController
             return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
+
+    public async create ({ response, auth, request }: HttpContextContract)
+    {
+        let { user } = auth;
+        
+
+
+
+    }
 }
