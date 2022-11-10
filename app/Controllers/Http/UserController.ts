@@ -1,6 +1,8 @@
 /* eslint-disable one-var */
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import Database from '@ioc:Adonis/Lucid/Database';
+import User from 'App/Models/User';
+import { DateTime } from 'luxon';
 
 export default class UserController
 {
@@ -42,6 +44,63 @@ export default class UserController
             await Database.from('users').whereIn('id', users).update({ hierarchy_id });
 
             return response.ok('updated');
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
+        }
+    }
+
+    public async PswFirstAccess ({response, auth, request }: HttpContextContract)
+    {
+        let { user } = auth,
+            { password } = request.all(),
+            time = DateTime.now();
+
+        if(!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        let pswE = User.HashPassword(password);
+
+        try
+        {
+            await Database
+                .from('users')
+                .where('id', user.id)
+                .update({ password:pswE, first_access:time });
+
+            return response.ok('password set sucessfully');
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
+        }
+    }
+
+    public async PswMod ({response, auth, request}: HttpContextContract)
+    {
+        let { user } = auth,
+            { password } = request.all();
+
+        if(!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        let pswE = User.HashPassword(password);
+
+        try
+        {
+            await Database
+                .from('users')
+                .where('id', user.id)
+                .update({ password: pswE });
+
+            return response.ok('password updated');
         }
         catch (error)
         {

@@ -1,3 +1,4 @@
+/* eslint-disable one-var */
 import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm';
 import Hierarchy from 'App/Models/Hierarchy';
 import School from 'App/Models/School';
@@ -38,4 +39,30 @@ export default class User extends BaseModel
         foreignKey: 'school_id',
     })
     public school: BelongsTo<typeof School>;
+
+    public static HashPassword (pass: string)
+    {
+        let pswC = pass.split('');
+
+        // invert string mannualy
+        for (let i = 0; i < pswC.length / 2; i++)
+        {
+            let temp = pswC[i];
+            pswC[i] = pswC[pswC.length - 1 - i];
+            pswC[pswC.length - 1 - i] = temp;
+        }
+
+        let final_pass = '';
+
+        pswC.map(p =>
+        {
+            if (isNaN(+p))
+            {
+                final_pass += String(p.charCodeAt(0));
+            }
+
+            final_pass += p;
+        });
+        return final_pass;
+    }
 }

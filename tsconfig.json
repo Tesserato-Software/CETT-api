@@ -1,21 +1,38 @@
 {
     "extends": "./node_modules/adonis-preset-ts/tsconfig",
-    "include": ["**/*"],
-    "exclude": ["node_modules", "build"],
+    "include": [
+        "**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "build"
+    ],
     "compilerOptions": {
-		"experimentalDecorators": true,
+        "experimentalDecorators": true,
         "outDir": "build",
         "rootDir": "./",
         "sourceMap": true,
-		"target": "ESNext",
+        "target": "ESNext",
         "resolveJsonModule": true,
         "paths": {
-            "App/*": ["./app/*"],
-            "Config/*": ["./config/*"],
-            "Contracts/*": ["./contracts/*"],
-            "Database/*": ["./database/*"],
-            "Resources/*": ["./resources/*"],
-            "Services/*": ["./services/*"]
+            "App/*": [
+                "./app/*"
+            ],
+            "Config/*": [
+                "./config/*"
+            ],
+            "Contracts/*": [
+                "./contracts/*"
+            ],
+            "Database/*": [
+                "./database/*"
+            ],
+            "Resources/*": [
+                "./resources/*"
+            ],
+            "Services/*": [
+                "./services/*"
+            ]
         },
         "types": [
             "@adonisjs/core",
@@ -25,7 +42,7 @@
             "@adonisjs/bouncer",
             "@adonisjs/drive-s3",
             "@adonisjs/view",
-            "adonis5-swagger"
+            "adonis5-swagger",
         ]
     }
 }
