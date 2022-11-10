@@ -9,7 +9,8 @@ Route.group(() =>
     Route.post('update/:id', 'EgressController.update');
 
     // GET
-    Route.get('dashboard-attach-archive', 'EgressController.DashboardAttachArchive');
+    Route.get('dashboard-attach-archive/:id', 'EgressController.DashboardAttachArchive');
+    Route.get('dashboard-dettach-archive/:id', 'EgressController.DashboardDettachArchive');
     Route.get('list', 'EgressController.index');
 
     // DELETE
