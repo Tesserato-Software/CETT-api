@@ -12,6 +12,7 @@ Route.group(() =>
     Route.get('dashboard-attach-archive/:id', 'EgressController.DashboardAttachArchive');
     Route.get('dashboard-dettach-archive/:id', 'EgressController.DashboardDettachArchive');
     Route.get('list', 'EgressController.index');
+    Route.get('show/:id', 'EgressController.show');
 
     // DELETE
     Route.delete('delete/:id', 'EgressController.destroy');

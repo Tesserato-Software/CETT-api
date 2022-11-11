@@ -3,29 +3,41 @@ import Database from '@ioc:Adonis/Lucid/Database';
 
 export default class ArchiveController
 {
-    public async DashBoardAttachEgress ({ response, auth }: HttpContextContract)
+    public async DashBoardAttachEgress ({ response, auth, params}: HttpContextContract)
     {
-        let { user } = auth;
+        let { user } = auth,
+            archive_id = params.id;
 
         if(!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
 
+        if (!archive_id)
+        {
+            return response.badRequest({ message: 'Missing parameters' });
+        }
+
         try
         {
-            let archives = await Database.from('archives')
-                    .select ('archives.id',
-                    )
+            let archives = await Database
+                    .from('archives')
+                    .select ('archives.id')
                     .where('archives.school_id', user.school_id)
-                    .groupBy('archives.id'),
-                egresses = await Database.from('egresses')
+                    .where('archives.id', archive_id)
+                    .groupBy('archives.id')
+                    .firstOrFail(),
+
+                egresses = await Database
+                    .from('egresses')
                     .select(
-                        'egresses.id',
+                        'egresses.arq_id',
                         'egresses.name',
+                        'egresses.archive_id'
                     )
                     .where('egresses.school_id', user.school_id)
                     .groupBy('egresses.id');
+
             return response.ok({archives, egresses});
         }
         catch (error)
@@ -53,9 +65,11 @@ export default class ArchiveController
 
         try
         {
-            await Database.from('egresses')
+            await Database
+                .from('egresses')
                 .whereIn('id', egress)
-                .update({ archive_id});
+                .andWhere('school_id', user.school_id)
+                .update({ archive_id });
 
             return response.ok('updated');
         }
@@ -83,8 +97,10 @@ export default class ArchiveController
 
         try
         {
-            await Database.from('egresses')
+            await Database
+                .from('egresses')
                 .whereIn('id', egress)
+                .andWhere('school_id', user.school_id)
                 .update({ archive_id: null });
 
             return response.ok('updated');
