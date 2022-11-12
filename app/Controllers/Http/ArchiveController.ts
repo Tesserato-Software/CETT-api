@@ -96,7 +96,7 @@ export default class ArchiveController
 
         try
         {
-            await Database.from('egress')
+            await Database.from('egresses')
                 .where('archive_id', archive_id)
                 .update({ archive_id: null });
 
