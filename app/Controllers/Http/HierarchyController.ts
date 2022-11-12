@@ -51,12 +51,41 @@ export default class HierarchyController
         }
     }
 
-    public async create ({ response, auth, request }: HttpContextContract)
+    public async create ({ response, auth, request, params }: HttpContextContract)
     {
-        let { user } = auth;
-        
+        const { user } = auth;
+        const { name, can_update, can_delete } = request.all();
+        const isInvalidRegister = !(
+            name?.length
+        );
 
+        if (!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' })
+        }
 
+        if (isInvalidRegister)
+        {
+            return response.badRequest({ message: 'Bad Request' })
+        }
 
+        try 
+        {
+                let hierarchyCreate = await Database.table('hierarchy')
+                .returning('id')
+                .insert({
+                    name,
+                    can_update,
+                    can_delete,
+                    school_id: user.school_id
+                });
+
+            return response.ok({ hierarchyCreate });
+        }
+
+        catch (error)
+        {
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
     }
 }

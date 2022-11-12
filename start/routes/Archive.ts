@@ -5,7 +5,14 @@ Route.group(() =>
 {
     // GET /archive
     Route.get('list', 'ArchiveController.index');
-    Route.get('dashboard-attach-egress','ArchiveController.DashBoardAttachEgress');
+    Route.get('dashboard-attach-egress/:id','ArchiveController.DashBoardAttachEgress');
+
+    // POST /archive
+    Route.post('create','ArchiveController.create');
+
+    // DELETE /archive
+    Route.delete('delete','ArchiveController.delete');
+
     // Patch /archive
     Route.patch('dettach-egress','ArchiveController.DettachEgress');
     Route.patch('attach-egress/:id','ArchiveController.AttachEgress');
