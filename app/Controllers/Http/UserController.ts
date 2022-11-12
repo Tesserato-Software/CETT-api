@@ -109,6 +109,55 @@ export default class UserController
         }
     }
 
+    public async GetUserById ({ response, auth, params }: HttpContextContract)
+    {
+        const { user } = auth;
+        const user_id = params.id;
+
+        if (!user_id)
+        {
+            return response.badRequest('User id must be a number');
+        }
+
+        if (!user || !user.hierarchy_id)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+        else if (user && user.hierarchy_id)
+        {
+            try
+            {
+                let hierarchy = await Database.from('hierarchies')
+                    .where('id', user.hierarchy_id)
+                    .firstOrFail();
+
+                if (!hierarchy?.can_update)
+                {
+                    return response.unauthorized({ message: 'Unauthorized' });
+                }
+            }
+            catch (error)
+            {
+                console.error(error);
+                return response.internalServerError({ error });
+            }
+        }
+
+        try
+        {
+            let user = await Database.from('users')
+                .select('users.*')
+                .where('users.id', user_id);
+
+            return response.ok(user);
+        }
+        catch (error)
+        {
+            console.log(error);
+            return response.internalServerError({ message: 'Internal Server Error'});
+        }
+    }
+
     public async ListUsers ({ response, auth }: HttpContextContract)
     {
         let { user } = auth;
@@ -268,8 +317,8 @@ export default class UserController
         {
             try
             {
-                let hierarchy = await Database.from('users')
-                    .where('id', user.hierarchy_id)
+                let hierarchy = await Database.from('hierarchies')
+                    .where('hierarchies.id', user.hierarchy_id)
                     .firstOrFail();
 
                 if (!hierarchy?.can_delete)
@@ -286,12 +335,12 @@ export default class UserController
 
         try
         {
-            await Database.from('egress')
-                .where('last_edit_by', user_id)
+            await Database.from('egresses')
+                .where('egresses.last_edit_by', user_id)
                 .update({ last_edit_by: null });
 
             await Database.from('users')
-                .where('id', user_id)
+                .where('users.id', user_id)
                 .delete();
 
             return response.ok({});
