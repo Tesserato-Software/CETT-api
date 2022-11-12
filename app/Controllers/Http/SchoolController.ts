@@ -1,15 +1,18 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import Database from '@ioc:Adonis/Lucid/Database';
 
-export default class SchoolController {
-    public async list ({ response, auth }: HttpContextContract) {
+export default class SchoolController
+{
+    public async list ({ response, auth }: HttpContextContract)
+    {
         let { user } = auth;
 
         if(!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
-        try {
+        try
+        {
             let school = await Database
                 .from('school')
                 .select(
@@ -33,28 +36,6 @@ export default class SchoolController {
                 .groupBy('school.id');
 
             return response.ok(school);
-        } 
-        catch(error) {
-            console.error(error);
-            return response.internalServerError({ message: 'Internal Server Error'  });
-        }
-    }
-
-    public async create({ response, auth, request }: HttpContextContract) {
-        let { user } = auth;
-        let { name } = request.all();
-
-        if(!user) {
-            return response.unauthorized({ message: 'Unauthorized' });
-        }
-
-        try {
-            let school = await Database
-            .insertQuery()
-            .table('school')
-            .insert({ name })
-
-            return response.ok(school)
         }
         catch(error)
         {
@@ -63,14 +44,43 @@ export default class SchoolController {
         }
     }
 
-    public async update({ response, auth }: HttpContextContract) {
-        let { user } = auth;
+    public async create ({ response, auth, request }: HttpContextContract)
+    {
+        let { user } = auth,
+            { name } = request.all();
 
-        if(!user) {
+        if(!user)
+        {
             return response.unauthorized({ message: 'Unauthorized' });
         }
-        
-        try {
+
+        try
+        {
+            let school = await Database
+                .insertQuery()
+                .table('school')
+                .insert({ name });
+
+            return response.ok(school);
+        }
+        catch(error)
+        {
+            console.error(error);
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
+    }
+
+    public async update ({ response, auth }: HttpContextContract)
+    {
+        let { user } = auth;
+
+        if(!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        try
+        {
             let school = await Database
                 // .query()
                 // .from('school')
@@ -78,9 +88,9 @@ export default class SchoolController {
                 // .update({  })
                 .from('school')
                 .where('id', 1)
-                .update({ name:'Escola Estadual Thiago Terra' })
-            
-            return response.ok(school)
+                .update({ name:'Escola Estadual Thiago Terra' });
+
+            return response.ok(school);
         }
         catch (error)
         {
@@ -89,20 +99,23 @@ export default class SchoolController {
         }
     }
 
-    public async delete({ response, auth }: HttpContextContract) {
+    public async delete ({ response, auth }: HttpContextContract)
+    {
         let { user } = auth;
 
-        if(!user) {
+        if(!user)
+        {
             return response.unauthorized({ message: 'Unauthorized' });
         }
 
-        try {
+        try
+        {
             let school = await Database
                 .from('users')
                 .where('id', 1)
-                .delete()
+                .delete();
 
-            return response.ok(school)
+            return response.ok(school);
         }
         catch (error)
         {
