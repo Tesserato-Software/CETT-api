@@ -11,7 +11,7 @@ Route.group(() =>
     Route.post('create','ArchiveController.create');
 
     // DELETE /archive
-    Route.delete('delete','ArchiveController.delete');
+    Route.delete('delete/:id','ArchiveController.delete');
 
     // Patch /archive
     Route.patch('dettach-egress','ArchiveController.DettachEgress');

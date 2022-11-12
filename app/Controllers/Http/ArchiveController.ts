@@ -49,7 +49,7 @@ export default class ArchiveController
             let archives = await Database //tenta inserir dados na tabela archives 
                 .insertQuery()
                 .table('archives')
-                .insert({school_id: user.school.id});
+                .insert({school_id: user.school_id});
 
             return response.ok({archives}); //retorna os dados criados
         }
@@ -78,7 +78,7 @@ export default class ArchiveController
         {
             try
             {
-                let hierarchy = await Database.from('users')
+                let hierarchy = await Database.from('hierarchies')
                     .where('id', user.hierarchy_id)
                     .firstOrFail();
 
