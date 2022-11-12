@@ -111,7 +111,7 @@ export default class UserController
 
     public async ListUsers ({ response, auth }: HttpContextContract)
     {
-        const { user } = auth;
+        let { user } = auth;
 
         if (!user)
         {
@@ -146,12 +146,12 @@ export default class UserController
     public async CreateUsers ({ response, auth, request }: HttpContextContract)
     {
         const { user } = auth;
-        const { email, full_name, password, role } = request.all();
+        const { email, full_name, password, hierarchy_id } = request.all();
         const isInvalidRegister = !(
             email?.length ||
             full_name?.length ||
             password?.length ||
-            role
+            hierarchy_id
         );
 
         if (!user)
@@ -172,7 +172,8 @@ export default class UserController
                     full_name,
                     email,
                     password,
-                    hierarchy_id: role,
+                    hierarchy_id,
+                    school_id: user.school_id,
                 });
 
             return response.ok({ userCreated });
