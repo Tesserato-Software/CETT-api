@@ -65,6 +65,11 @@ export default class ArchiveController
         let { user } = auth,
             archive_id = params.id;
 
+        if (!archive_id || isNaN(+archive_id))
+        {
+            return response.badRequest({ message: 'Bad Request' });
+        }
+
         if (!user || !user.hierarchy_id)
         {
             return response.unauthorized({ message: 'Unauthorized' });
