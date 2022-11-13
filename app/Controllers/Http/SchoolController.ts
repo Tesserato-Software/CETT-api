@@ -14,26 +14,12 @@ export default class SchoolController
         try
         {
             let school = await Database
-                .from('school')
+                .from('schools')
                 .select(
-                    'school.id',
-                    'school.name',
-                    'school.situacao',
-                    // Database.raw(`
-                    //     CASE WHEN Count(school.id) > 0
-                    //     THEN (
-                    //         json_agg (
-                    //             json_build_object(
-                    //                 'school_id', school.id
-                    //                 'situacao_school', school.situacao
-                    //             )
-                    //         )
-                    //     )
-                    // ELSE '[]'
-                    // END AS 
-                    // `)
+                    'schools.id',
+                    'schools.name',
                 )
-                .groupBy('school.id');
+                .groupBy('schools.id');
 
             return response.ok(school);
         }
@@ -57,9 +43,11 @@ export default class SchoolController
         try
         {
             let school = await Database
-                .insertQuery()
-                .table('school')
-                .insert({ name });
+                .table('schools')
+                .returning('id')
+                .insert({
+                    name,
+                });
 
             return response.ok(school);
         }
@@ -70,9 +58,10 @@ export default class SchoolController
         }
     }
 
-    public async update ({ response, auth }: HttpContextContract)
+    public async update ({ response, auth, params, request }: HttpContextContract)
     {
-        let { user } = auth;
+        let { user } = auth,
+            { name } = request.all();
 
         if(!user)
         {
@@ -82,13 +71,9 @@ export default class SchoolController
         try
         {
             let school = await Database
-                // .query()
-                // .from('school')
-                // .where('id', params.id)
-                // .update({  })
-                .from('school')
-                .where('id', 1)
-                .update({ name:'Escola Estadual Thiago Terra' });
+                .from('schools')
+                .where('id', params.id)
+                .update({ name });
 
             return response.ok(school);
         }
@@ -99,7 +84,7 @@ export default class SchoolController
         }
     }
 
-    public async delete ({ response, auth }: HttpContextContract)
+    public async delete ({ response, auth, params }: HttpContextContract)
     {
         let { user } = auth;
 
@@ -111,8 +96,8 @@ export default class SchoolController
         try
         {
             let school = await Database
-                .from('users')
-                .where('id', 1)
+                .from('schools')
+                .where('id', params.id)
                 .delete();
 
             return response.ok(school);
