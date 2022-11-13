@@ -61,23 +61,23 @@ export default class HierarchyController
 
         if (!user)
         {
-            return response.unauthorized({ message: 'Unauthorized' })
+            return response.unauthorized({ message: 'Unauthorized' });
         }
 
         if (isInvalidRegister)
         {
-            return response.badRequest({ message: 'Bad Request' })
+            return response.badRequest({ message: 'Bad Request' });
         }
 
-        try 
+        try
         {
-                let hierarchyCreate = await Database.table('hierarchy')
+            let hierarchyCreate = await Database.table('hierarchy')
                 .returning('id')
                 .insert({
                     name,
                     can_update,
                     can_delete,
-                    school_id: user.school_id
+                    school_id: user.school_id,
                 });
 
             return response.ok({ hierarchyCreate });
