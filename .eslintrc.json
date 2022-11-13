@@ -1,12 +1,12 @@
 {
-  "extends": ["plugin:adonis/typescriptApp"],
-  "rules": {
-  "@typescript-eslint/naming-convention": "off",
-  "brace-style": ["error", "allman"],
-  "one-var": ["error", "always"],
-      "indent": ["error", 4],
-      "@typescript-eslint/indent": ["error", 4],
-      "@typescript-eslint/semi": "off",
-      "semi": ["error", "always"]
-  }
+    "extends": ["plugin:adonis/typescriptApp"],
+    "rules": {
+        "@typescript-eslint/naming-convention": "off",
+        "brace-style": ["error", "allman"],
+        "one-var": ["error", "always"],
+        "indent": ["error", 4, { "SwitchCase": 1 }],
+        "@typescript-eslint/indent": ["error", 4],
+        "@typescript-eslint/semi": "off",
+        "semi": ["error", "always"]
+    }
 }

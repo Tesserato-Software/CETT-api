@@ -8,6 +8,7 @@ Route.group(() =>
     Route.get('list', 'UserController.ListUsers');
     // GET / get user by id
     Route.get('get-user/:id', 'UserController.GetUserById');
+    Route.get('list-disableds', 'UserController.listDisableds');
     // POST / create users
     Route.post('create', 'UserController.CreateUsers');
     // PUT / update users
