@@ -53,55 +53,96 @@ export default class UserController
         }
     }
 
-    public async PswFirstAccess ({response, auth }: HttpContextContract)
+    public async PswFirstAccess ({response, auth, request }: HttpContextContract)
     {
-        let { user } = auth;
+        const { user } = auth;
+        const { password } = request.all();
+        const isInvalidRegister = !(
+            password?.length
+        );
 
-        if(!user)
+        if (!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
+
+        if (isInvalidRegister)
+        {
+            return response.badRequest({ message: 'Bad Request' });
+        }
+
         try
         {
-            await Database
-                .from('users')
-                .where('id', user.id)
-                .update({ should_reset_password: false });
+            let hashed_pass = User.HashPassword(password),
+                adonis__hashed_pass = await Hash.make(password);
 
-            return response.ok('password first access updated to false');
+            let pass_id = await Database
+                .table('passwords')
+                .returning('id')
+                .insert({ password: hashed_pass });
+
+            let userFirstAccess = await Database.table('users')
+                .returning('id')
+                .insert({
+                    password_id: pass_id[0],
+                    password: adonis__hashed_pass,
+                    should_reset_password: false,
+                });
+
+            await Database.from('passwords').where('id', pass_id[0]).update({ user_id: userFirstAccess[0] });
+
+            return response.ok({ userFirstAccess });
         }
         catch (error)
         {
             console.error(error);
-            return response.internalServerError({ error });
+            return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
 
     public async PswMod ({response, auth, request}: HttpContextContract)
     {
-        let { user } = auth,
-            { password } = request.all();
+        const { user } = auth;
+        const { password } = request.all();
+        const isInvalidRegister = !(
+            password?.length
+        );
 
-        if(!user)
+        if (!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
 
-        let pswE = User.HashPassword(password);
+        if (isInvalidRegister)
+        {
+            return response.badRequest({ message: 'Bad Request' });
+        }
 
         try
         {
-            await Database
-                .from('passwords')
-                .where('user_id', user.id)
-                .update({ password: pswE });
+            let hashed_pass = User.HashPassword(password),
+                adonis__hashed_pass = await Hash.make(password);
 
-            return response.ok('password updated');
+            let pass_id = await Database
+                .table('passwords')
+                .returning('id')
+                .insert({ password: hashed_pass });
+
+            let userPswUp = await Database.table('users')
+                .returning('id')
+                .insert({
+                    password_id: pass_id[0],
+                    password: adonis__hashed_pass,
+                });
+
+            await Database.from('passwords').where('id', pass_id[0]).update({ user_id: userPswUp[0] });
+
+            return response.ok({ userPswUp });
         }
         catch (error)
         {
             console.error(error);
-            return response.internalServerError({ error });
+            return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
 
