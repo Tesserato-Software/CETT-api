@@ -9,7 +9,8 @@ import './routes/Auth';
 import './routes/Archive';
 import './routes/Egress';
 import './routes/User';
-import './routes/password';
+import './routes/Password';
+import './routes/School';
 
 // Health Check
 Route.get('health', async ({ response }) =>
