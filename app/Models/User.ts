@@ -14,6 +14,9 @@ export default class User extends BaseModel
     public full_name: string;
 
     @column()
+    public password: string;
+
+    @column()
     public password_id?: number;
 
     @column()

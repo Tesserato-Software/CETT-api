@@ -1,4 +1,5 @@
 /* eslint-disable one-var */
+import Hash from '@ioc:Adonis/Core/Hash';
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import Database from '@ioc:Adonis/Lucid/Database';
 import User from 'App/Models/User';
@@ -215,20 +216,32 @@ export default class UserController
 
         try
         {
+            let hashed_pass = User.HashPassword(password),
+                adonis__hashed_pass = await Hash.make(password);
+
+            let pass_id = await Database
+                .table('passwords')
+                .returning('id')
+                .insert({ password: hashed_pass });
+
             let userCreated = await Database.table('users')
                 .returning('id')
                 .insert({
                     full_name,
                     email,
-                    password,
+                    password_id: pass_id[0],
+                    password: adonis__hashed_pass,
                     hierarchy_id,
                     school_id: user.school_id,
                 });
+
+            await Database.from('passwords').where('id', pass_id[0]).update({ user_id: userCreated[0] });
 
             return response.ok({ userCreated });
         }
         catch (error)
         {
+            console.error(error);
             return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
