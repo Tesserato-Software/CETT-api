@@ -1,6 +1,7 @@
 /* eslint-disable one-var */
-import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm';
+import { BaseModel, BelongsTo, belongsTo, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm';
 import Hierarchy from 'App/Models/Hierarchy';
+import Password from 'App/Models/Password';
 import School from 'App/Models/School';
 import { DateTime } from 'ts-luxon';
 
@@ -13,7 +14,7 @@ export default class User extends BaseModel
     public full_name: string;
 
     @column()
-    public password: string;
+    public password_id?: number;
 
     @column()
     public email: string;
@@ -25,7 +26,10 @@ export default class User extends BaseModel
     public school_id: number;
 
     @column()
-    public first_access: DateTime;
+    public should_reset_password: boolean;
+
+    @column()
+    public is_enabled: boolean;
 
     /* relations */
     @belongsTo(() => Hierarchy, {
@@ -40,29 +44,53 @@ export default class User extends BaseModel
     })
     public school: BelongsTo<typeof School>;
 
+    @hasMany(() => Password, { foreignKey: 'password_id' })
+    public passwords: HasMany<typeof Password>;
+
     public static HashPassword (pass: string)
     {
-        let pswC = pass.split('');
+        /*
+            O Aluno deverá criar um algoritmo 
+            para "criptografar" a senha no banco 
+            de dados utilizando conceitos de 
+            criptografia simétrica ou então 
+            assimétrica.
 
-        // invert string mannualy
-        for (let i = 0; i < pswC.length / 2; i++)
+            Deverá fazer o uso de funções e 
+            vetores/matrizes. Não deve copiar algoritmos prontos da Internet nem fazer uso de bibliotecas/funções 
+            que trazem 
+            o resultado pronto. Poderá, no entanto, fazer uso de funções das bibliotecas do PHP que localizem 
+            caracteres,
+            contem caracteres e outras semelhantes as encontradas na biblioteca string.h da Linguagem C.
+        */
+
+        let root_pass = pass,
+            new_pass = '';
+
+        for (let i = 0; i < root_pass.length; i++)
         {
-            let temp = pswC[i];
-            pswC[i] = pswC[pswC.length - 1 - i];
-            pswC[pswC.length - 1 - i] = temp;
-        }
-
-        let final_pass = '';
-
-        pswC.map(p =>
-        {
-            if (isNaN(+p))
+            // conver to binary WITHOUT charCodeAt
+            let binary;
+            for (let j = 0; j < root_pass[i].length; j++)
             {
-                final_pass += String(p.charCodeAt(0));
+                binary += root_pass[i][j].toString();
+
+                // add 0 to the left
+                if (binary.length < 8)
+                {
+                    binary = '0' + binary;
+                }
+
+                // add 1 to the right
+                if (binary.length < 8)
+                {
+                    binary += '1';
+                }
             }
 
-            final_pass += p;
-        });
-        return final_pass;
+            new_pass += binary;
+        }
+
+        console.log('🚀 ~ file: User.ts ~ line 60 ~ new_pass', new_pass);
     }
 }
