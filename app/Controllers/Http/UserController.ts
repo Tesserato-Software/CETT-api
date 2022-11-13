@@ -53,27 +53,22 @@ export default class UserController
         }
     }
 
-    public async PswFirstAccess ({response, auth, request }: HttpContextContract)
+    public async PswFirstAccess ({response, auth }: HttpContextContract)
     {
-        let { user } = auth,
-            { password } = request.all(),
-            time = DateTime.now();
+        let { user } = auth;
 
         if(!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
-
-        let pswE = User.HashPassword(password);
-
         try
         {
             await Database
                 .from('users')
                 .where('id', user.id)
-                .update({ password:pswE, first_access:time });
+                .update({ should_reset_password: false });
 
-            return response.ok('password set sucessfully');
+            return response.ok('password first access updated to false');
         }
         catch (error)
         {
@@ -97,8 +92,8 @@ export default class UserController
         try
         {
             await Database
-                .from('users')
-                .where('id', user.id)
+                .from('passwords')
+                .where('user_id', user.id)
                 .update({ password: pswE });
 
             return response.ok('password updated');
