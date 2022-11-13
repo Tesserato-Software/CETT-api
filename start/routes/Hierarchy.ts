@@ -8,5 +8,13 @@ Route.group(() =>
 
     // POST /hierarchy
     Route.post('create', 'HierarchyController.create');
+
+    // PUT /hierarchy
+    Route.put('update/:id', 'HierarchyController.update');
+
+    // DELETE /hierarchy
+    Route.delete('delete/:id', 'HierarchyController.delete');
+    
+
 }).prefix('hierarchy').middleware(['auth']);
 

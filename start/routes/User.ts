@@ -6,6 +6,8 @@ Route.group(() =>
 {
     // GET / list users
     Route.get('list', 'UserController.ListUsers');
+    // GET / get user by id
+    Route.get('get-user/:id', 'UserController.GetUserById');
     // POST / create users
     Route.post('create', 'UserController.CreateUsers');
     // PUT / update users

@@ -49,7 +49,7 @@ export default class ArchiveController
             let archives = await Database //tenta inserir dados na tabela archives 
                 .insertQuery()
                 .table('archives')
-                .insert({school_id: user.school.id});
+                .insert({school_id: user.school_id});
 
             return response.ok({archives}); //retorna os dados criados
         }
@@ -65,6 +65,11 @@ export default class ArchiveController
         let { user } = auth,
             archive_id = params.id;
 
+        if (!archive_id || isNaN(+archive_id))
+        {
+            return response.badRequest({ message: 'Bad Request' });
+        }
+
         if (!user || !user.hierarchy_id)
         {
             return response.unauthorized({ message: 'Unauthorized' });
@@ -73,7 +78,7 @@ export default class ArchiveController
         {
             try
             {
-                let hierarchy = await Database.from('users')
+                let hierarchy = await Database.from('hierarchies')
                     .where('id', user.hierarchy_id)
                     .firstOrFail();
 
@@ -91,7 +96,7 @@ export default class ArchiveController
 
         try
         {
-            await Database.from('egress')
+            await Database.from('egresses')
                 .where('archive_id', archive_id)
                 .update({ archive_id: null });
 
