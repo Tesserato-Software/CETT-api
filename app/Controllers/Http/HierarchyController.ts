@@ -59,7 +59,7 @@ export default class HierarchyController
     public async create ({ response, auth, request }: HttpContextContract)
     {
         const { user } = auth;
-        const { name, can_update, can_delete } = request.all();
+        const { name, can_update, can_delete, can_enable_users } = request.all();
         const isInvalidRegister = !(
             name?.length
         );
@@ -82,6 +82,7 @@ export default class HierarchyController
                     name,
                     can_update,
                     can_delete, 
+                    can_enable_users,
                     school_id: user.school_id
                 });
 
@@ -100,7 +101,7 @@ export default class HierarchyController
     {
         const { user } = auth;
         const user_id = params.id;
-        const { name, can_delete, can_update } = request.all();
+        const { name, can_delete, can_update, can_enable_users } = request.all();
         const isInvalidRegister = !(
             name?.length
         );
@@ -149,6 +150,7 @@ export default class HierarchyController
                     name,
                     can_delete,
                     can_update,
+                    can_enable_users
                 });
 
             return response.ok({ hierarchyUpdated });
