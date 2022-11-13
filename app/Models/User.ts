@@ -49,48 +49,32 @@ export default class User extends BaseModel
 
     public static HashPassword (pass: string)
     {
-        /*
-            O Aluno deverá criar um algoritmo 
-            para "criptografar" a senha no banco 
-            de dados utilizando conceitos de 
-            criptografia simétrica ou então 
-            assimétrica.
-
-            Deverá fazer o uso de funções e 
-            vetores/matrizes. Não deve copiar algoritmos prontos da Internet nem fazer uso de bibliotecas/funções 
-            que trazem 
-            o resultado pronto. Poderá, no entanto, fazer uso de funções das bibliotecas do PHP que localizem 
-            caracteres,
-            contem caracteres e outras semelhantes as encontradas na biblioteca string.h da Linguagem C.
-        */
-
         let root_pass = pass,
             new_pass = '';
 
         for (let i = 0; i < root_pass.length; i++)
         {
-            // conver to binary WITHOUT charCodeAt
-            let binary;
-            for (let j = 0; j < root_pass[i].length; j++)
+            let bin = root_pass[i].charCodeAt(0).toString(2);
+
+            if (bin)
             {
-                binary += root_pass[i][j].toString();
-
-                // add 0 to the left
-                if (binary.length < 8)
-                {
-                    binary = '0' + binary;
-                }
-
-                // add 1 to the right
-                if (binary.length < 8)
-                {
-                    binary += '1';
-                }
+                new_pass += bin + (((i + 1) === root_pass.length) ? '' : ' ');
             }
-
-            new_pass += binary;
         }
 
-        console.log('🚀 ~ file: User.ts ~ line 60 ~ new_pass', new_pass);
+        return new_pass;
+    }
+
+    public static CompareHash (hashed_pass: string, pass: string)
+    {
+        let char_pass = '',
+            char_splited = hashed_pass.split(' ');
+
+        for (let bin of char_splited)
+        {
+            char_pass += String.fromCharCode(parseInt(bin, 2));
+        }
+
+        return char_pass === pass;
     }
 }
