@@ -153,6 +153,7 @@ export default class UserController
 
         try
         {
+            let hashed_pass = User.HashPassword(password);
             let pswNCheck = await Database
                 .from('passwords')
                 .select('COUNT(*)')
@@ -172,7 +173,7 @@ export default class UserController
                 .from('passwords')
                 .where('user_id', user_id)
                 .update({
-                    password: password,
+                    password: hashed_pass,
                     created_at: created_at,
                 });
 
