@@ -480,7 +480,7 @@ export default class EgressController
 
                 console.log('row ~ ', row);
 
-                // insere dados no banco 
+                // insere dados no banco
                 await Database
                     .table('egresses')
                     .insert({

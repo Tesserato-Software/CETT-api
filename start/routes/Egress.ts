@@ -10,6 +10,9 @@ Route.group(() =>
 
     Route.post('import-excel', 'EgressController.ImportExcel');
 
+    Route.post('dettach-archives', 'EgressController.DettachArchives');
+    Route.post('attach-archives/:id', 'EgressController.AttachArchives');
+
     // GET
     Route.get('dashboard-attach-archive/:id', 'EgressController.DashboardAttachArchive');
     Route.get('dashboard-dettach-archive/:id', 'EgressController.DashboardDettachArchive');
@@ -20,6 +23,4 @@ Route.group(() =>
     Route.delete('delete/:id', 'EgressController.destroy');
 
     // PATCH
-    Route.patch('dettach-archives', 'EgressController.DettachArchives');
-    Route.patch('attach-archives/:id', 'EgressController.AttachArchives');
 }).prefix('egress').middleware(['auth']);
