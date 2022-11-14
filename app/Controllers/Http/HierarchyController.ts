@@ -6,7 +6,6 @@ import Hierarchy from 'App/Models/Hierarchy';
 
 export default class HierarchyController
 {
-
     // LIST
     public async index ({ response, auth }: HttpContextContract)
     {
@@ -75,14 +74,14 @@ export default class HierarchyController
 
         try
         {
-                let hierarchyCreate = await Database.table('hierarchies')
+            let hierarchyCreate = await Database.table('hierarchies')
                 .returning('id')
                 .insert({
                     name,
                     can_update,
-                    can_delete, 
+                    can_delete,
                     can_enable_users,
-                    school_id: user.school_id
+                    school_id: user.school_id,
                 });
 
             return response.ok({ hierarchyCreate });
@@ -93,7 +92,6 @@ export default class HierarchyController
             return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
-
 
     // UPDATE    
     public async update ({ response, auth, request, params }: HttpContextContract)
@@ -133,7 +131,7 @@ export default class HierarchyController
                     return response.unauthorized({ message: 'Unauthorized' });
                 }
             }
-        
+
             catch (error)
             {
                 console.error(error);
@@ -141,7 +139,7 @@ export default class HierarchyController
             }
         }
 
-        try 
+        try
         {
             let hierarchyUpdated = await Database.from('hierarchies')
                 .where('id', params.id)
@@ -149,18 +147,16 @@ export default class HierarchyController
                     name,
                     can_delete,
                     can_update,
-                    can_enable_users
+                    can_enable_users,
                 });
 
             return response.ok({ hierarchyUpdated });
         }
         catch (error)
         {
-            return response.internalServerError({ message: 'Internal Server Error' })
+            return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
-
-
 
     // DELETE
     public async delete ({ response, auth, params }: HttpContextContract)
@@ -203,7 +199,7 @@ export default class HierarchyController
             await Database
                 .from('users')
                 .where('hierarchy_id', h_id)
-                .update({ hierarchy_id: null})
+                .update({ hierarchy_id: null});
 
             await Database
                 .from('hierarchies')
@@ -218,5 +214,4 @@ export default class HierarchyController
             return response.internalServerError({ error });
         }
     }
-
 }
