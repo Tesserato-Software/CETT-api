@@ -46,7 +46,7 @@ export default class AuthController
         {
             if (!user.is_enabled)
             {
-                return response.unauthorized({ message: 'Unauthorized' });
+                return response.unauthorized({ message: 'user_disabled' });
             }
 
             if (user.should_reset_password)
