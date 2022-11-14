@@ -39,19 +39,19 @@ export default class AuthController
 
         if (!user)
         {
-            return response.unauthorized({ message: 'Unauthorized' });
+            return response.unauthorized({ message: 'Unauthorized', id: undefined });
         }
 
         if(user)
         {
             if (!user.is_enabled)
             {
-                return response.unauthorized({ message: 'Unauthorized' });
+                return response.unauthorized({ message: 'user_disabled', id: user.id});
             }
 
             if (user.should_reset_password)
             {
-                return response.unauthorized({ message: 'should_reset_password' });
+                return response.unauthorized({ message: 'should_reset_password', id: user.id});
             }
         }
 
@@ -67,7 +67,7 @@ export default class AuthController
                     .where('id', user?.id)
                     .update({ should_reset_password: true });
 
-                return response.unauthorized({ message: 'should_reset_password' });
+                return response.unauthorized({ message: 'should_reset_password', id: user.id});
             }
         }
 
