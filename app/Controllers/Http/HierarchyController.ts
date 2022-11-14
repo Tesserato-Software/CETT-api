@@ -4,6 +4,9 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import Database from '@ioc:Adonis/Lucid/Database';
 import Hierarchy from 'App/Models/Hierarchy';
 
+
+
+
 export default class HierarchyController
 {
     // LIST
@@ -214,4 +217,21 @@ export default class HierarchyController
             return response.internalServerError({ error });
         }
     }
+
+   
+   
+    // GET HIERARCHY BY ID
+
+
+
+
+
+
+
+
 }
+
+
+
+
+

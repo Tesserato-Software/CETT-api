@@ -5,6 +5,7 @@ Route.group(() =>
 {
     // GET /hierarchy
     Route.get('list', 'HierarchyController.index');
+    Route.get('get-hierarchy/:id', 'HierarchyController.GetHierarchyById');
 
     // POST /hierarchy
     Route.post('create', 'HierarchyController.create');
