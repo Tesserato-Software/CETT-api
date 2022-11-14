@@ -9,11 +9,8 @@ Route.group(() =>
 
     // POST /archive
     Route.post('create','ArchiveController.create');
-
+    Route.post('dettach-egress','ArchiveController.DettachEgress');
+    Route.post('attach-egress/:id','ArchiveController.AttachEgress');
     // DELETE /archive
     Route.delete('delete/:id','ArchiveController.delete');
-
-    // Patch /archive
-    Route.patch('dettach-egress','ArchiveController.DettachEgress');
-    Route.patch('attach-egress/:id','ArchiveController.AttachEgress');
 }).prefix('archive').middleware(['auth']);
