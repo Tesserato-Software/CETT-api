@@ -5,6 +5,7 @@ Route.group(() =>
 {
     // GET /hierarchy
     Route.get('list', 'HierarchyController.index');
+    Route.get('show/:id', 'HierarchyController.show');
     Route.get('get-hierarchy/:id', 'HierarchyController.GetHierarchyById');
 
     // POST /hierarchy
@@ -15,7 +16,5 @@ Route.group(() =>
 
     // DELETE /hierarchy
     Route.delete('delete/:id', 'HierarchyController.delete');
-    
-
 }).prefix('hierarchy').middleware(['auth']);
 
