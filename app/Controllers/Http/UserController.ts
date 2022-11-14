@@ -235,6 +235,31 @@ export default class UserController
         }
     }
 
+    public async listDisableds ({response, auth }: HttpContextContract)
+    {
+        let { user } = auth;
+
+        if(!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        try
+        {
+            let users = await Database
+                .from('users')
+                .where('school_id', user.id)
+                .where('is_enabled', false);
+
+            return response.ok(users);
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
+        }
+    }
+
     public async ListUsers ({ response, auth }: HttpContextContract)
     {
         let { user } = auth;
@@ -252,9 +277,9 @@ export default class UserController
                     'users.full_name',
                     'users.email',
                     Database.raw(`
-                            json_agg(
-                                hierarchies.*
-                            ) AS hierarchy
+                        json_agg(
+                            hierarchies.*
+                        ) AS hierarchy
                     `)
                 )
                 .where('users.school_id', user.school_id)

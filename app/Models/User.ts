@@ -35,6 +35,11 @@ export default class User extends BaseModel
     public is_enabled: boolean;
 
     /* relations */
+    @hasMany(() => Password, {
+        foreignKey: 'user_id',
+    })
+    public passwords: HasMany<typeof Password>;
+
     @belongsTo(() => Hierarchy, {
         localKey: 'id',
         foreignKey: 'hierarchy_id',
@@ -46,9 +51,6 @@ export default class User extends BaseModel
         foreignKey: 'school_id',
     })
     public school: BelongsTo<typeof School>;
-
-    @hasMany(() => Password, { foreignKey: 'password_id' })
-    public passwords: HasMany<typeof Password>;
 
     public static HashPassword (pass: string)
     {

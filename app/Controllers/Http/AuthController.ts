@@ -32,4 +32,47 @@ export default class AuthController
 
         return response.send({ user, token: token?.token });
     }
+
+    public async getUserData ({ auth, response }: HttpContextContract)
+    {
+        const {user} = auth;
+
+        if (!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        if(user)
+        {
+            if (!user.is_enabled)
+            {
+                return response.unauthorized({ message: 'Unauthorized' });
+            }
+
+            if (user.should_reset_password)
+            {
+                return response.unauthorized({ message: 'should_reset_password' });
+            }
+        }
+
+        await user?.load('passwords');
+
+        let password_created_at = user?.passwords?.find((password) => password.id === user.password_id)?.created_at;
+        if (password_created_at)
+        {
+            if (password_created_at.diffNow('days').days < -3)
+            {
+                await Database
+                    .from('users')
+                    .where('id', user?.id)
+                    .update({ should_reset_password: true });
+
+                return response.unauthorized({ message: 'should_reset_password' });
+            }
+        }
+
+        await user?.load('hirarchy');
+
+        return response.send(user);
+    }
 }

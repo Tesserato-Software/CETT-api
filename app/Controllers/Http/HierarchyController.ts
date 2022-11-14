@@ -33,8 +33,7 @@ export default class HierarchyController
                                     'full_name', users.full_name,
                                     'email', users.email,
                                     'hierarchy_id', users.hierarchy_id,
-                                    'school_id', users.school_id,
-                                    'first_access', users.first_access
+                                    'school_id', users.school_id
                                 )
                             )
                         )
