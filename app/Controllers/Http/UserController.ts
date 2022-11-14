@@ -60,7 +60,7 @@ export default class UserController
         const isInvalidRegister = !(
             password?.length
         );
-
+            //ADD CREATED_AT DATE
         if (!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
@@ -81,7 +81,8 @@ export default class UserController
                 .returning('id')
                 .insert({ password: hashed_pass });
 
-            let userFirstAccess = await Database.table('users')
+            let userFirstAccess = await Database
+                .table('users')
                 .returning('id')
                 .insert({
                     password_id: pass_id[0],
@@ -146,6 +147,45 @@ export default class UserController
         }
     }
 
+    public async pswStorage ({ response, request }: HttpContextContract)
+    {
+        let { password, user_id, created_at } = request.all();
+
+        try
+        {
+            let pswNCheck = await Database
+                .from('passwords')
+                .select('COUNT(*)')
+                .where('user_id', user_id);
+
+            if (pswNCheck[0].count > 3)
+            {
+                await Database
+                    .from('passwords')
+                    .where('user_id', user_id)
+                    .orderBy('created_at', 'desc')
+                    .limit(1)
+                    .delete();
+            }
+
+            let pswUp = await Database
+                .from('passwords')
+                .where('user_id', user_id)
+                .update({
+                    password: password,
+                    created_at: created_at,
+                });
+
+            await Database.from('passwords').where('user_id', user_id).update({ password: pswUp });
+
+            return response.ok({ pswUp });
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
+    }
     public async GetUserById ({ response, auth, params }: HttpContextContract)
     {
         const { user } = auth;

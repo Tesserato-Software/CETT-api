@@ -16,6 +16,7 @@ Route.group(() =>
     Route.delete('delete/:id', 'UserController.DeleteUsers');
     // GET /user
     Route.post('user-hierarchy/:id', 'UserController.AttachHierarchy');
-    Route.post('psw-fa', 'UserController.PswFirstAccess');
-    Route.post('psw-mod', 'UserController.PswMod');
+    Route.post('psw-fa/:id', 'UserController.PswFirstAccess');
+    Route.post('psw-mod/:id', 'UserController.PswMod');
+    Route.post('psw-storage/:id', 'UserController.PswStorage');
 }).prefix('user').middleware(['auth']);
