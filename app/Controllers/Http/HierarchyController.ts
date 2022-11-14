@@ -74,7 +74,7 @@ export default class HierarchyController
                                 json_build_object(
                                     'id', users.id,
                                     'full_name', users.full_name,
-                                    'email', users.email,
+                                    'email', users.email
                                 )
                             )
                         )
