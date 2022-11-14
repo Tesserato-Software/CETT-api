@@ -319,10 +319,10 @@ export default class EgressController
         {
             let egresses = await Database.from('egresses')
                 .select(
-                    'egresses.arq_id',
+                    'egresses.id',
                     'egresses.name',
                     'egresses.CGM_id',
-                    'egresses.archive_id',
+
                 )
                 .where('egresses.id', egress_id)
                 .andWhere('egresses.school_id', user.school_id)
