@@ -148,6 +148,18 @@ export default class UserController
         try
         {
             let hashed_pass = User.HashPassword(password);
+
+            let exists = await Database
+                .from('passwords')
+                .where('user_id', user_id)
+                .andWhere('password', hashed_pass)
+                .first();
+
+            if (exists)
+            {
+                return response.badRequest({ exists: true });
+            }
+
             let pswNCheck = await Database.from('passwords')
                 .count('* as count')
                 .where('user_id', user_id);
@@ -161,14 +173,19 @@ export default class UserController
                     .delete();
             }
 
-            let pswUp = await Database.from('passwords').where('user_id', user_id).update({
-                password: hashed_pass,
-                created_at: DateTime.now(),
-            });
+            let pswUp = await Database
+                .table('passwords')
+                .returning('id')
+                .insert({
+                    password: hashed_pass,
+                    user_id: user_id,
+                    created_at: DateTime.now(),
+                });
 
             await Database.from('users')
                 .where('id', user_id)
                 .update({
+                    password_id: pswUp[0],
                     password: await Hash.make(password),
                     should_reset_password: false,
                 });
@@ -314,7 +331,10 @@ export default class UserController
 
             let pass_id = await Database.table('passwords')
                 .returning('id')
-                .insert({ password: hashed_pass });
+                .insert({
+                    password: hashed_pass,
+                    created_at: DateTime.now(),
+                });
 
             let userCreated = await Database.table('users').returning('id').insert({
                 full_name,

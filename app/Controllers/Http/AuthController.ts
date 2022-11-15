@@ -20,7 +20,7 @@ export default class AuthController
             let up__password = await Database
                     .from('passwords')
                     .select('password')
-                    .where('user_id', user.id)
+                    .where('id', user.password_id!)
                     .first(),
                 up__unhashed = await User.CompareHash(up__password.password, password);
 
