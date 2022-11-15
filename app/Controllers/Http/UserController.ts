@@ -149,7 +149,7 @@ export default class UserController
 
     public async pswStorage ({ response, request }: HttpContextContract)
     {
-        let { password, user_id, created_at } = request.all();
+        let { password, user_id } = request.all();
 
         try
         {
@@ -174,7 +174,7 @@ export default class UserController
                 .where('user_id', user_id)
                 .update({
                     password: hashed_pass,
-                    created_at: created_at,
+                    created_at: DateTime.now(),
                 });
 
             await Database.from('passwords').where('user_id', user_id).update({ password: pswUp });

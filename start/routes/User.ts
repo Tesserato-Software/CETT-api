@@ -19,5 +19,5 @@ Route.group(() =>
     Route.post('user-hierarchy/:id', 'UserController.AttachHierarchy');
     Route.post('psw-fa/:id', 'UserController.PswFirstAccess');
     Route.post('psw-mod/:id', 'UserController.PswMod');
-    Route.post('psw-storage/:id', 'UserController.PswStorage');
+    Route.post('psw-storage/:id', 'UserController.pswStorage');
 }).prefix('user').middleware(['auth']);
