@@ -6,6 +6,7 @@ Route.group(() =>
     // GET /archive
     Route.get('list', 'ArchiveController.index');
     Route.get('dashboard-attach-egress/:id','ArchiveController.DashBoardAttachEgress');
+    Route.get('dashboard-dattach-egress/:id','ArchiveController.DashBoardDettachEgress');
 
     // POST /archive
     Route.post('create','ArchiveController.create');

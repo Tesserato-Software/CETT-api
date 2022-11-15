@@ -222,4 +222,50 @@ export default class ArchiveController
             return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
+
+    public async DashBoardDettachEgress ({ response, auth, params}: HttpContextContract)
+    {
+        let { user } = auth,
+            archive_id = params.id;
+
+        if(!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        if (!archive_id)
+        {
+            return response.badRequest({ message: 'Missing parameters' });
+        }
+
+        try
+        {
+            let archives = await Database
+                    .from('archives')
+                    .select ('archives.id')
+                    .where('archives.id', archive_id)
+                    .andWhere('archives.school_id', user.school_id)
+                    .groupBy('archives.id')
+                    .firstOrFail(),
+
+                egresses = await Database
+                    .from('egresses')
+                    .select(
+                        'egresses.arq_id',
+                        'egresses.name',
+                        'egresses.archive_id',
+                        'egresses.id'
+                    )
+                    .where('egresses.school_id', user.school_id)
+                    .andWhere('egresses.archive_id',archive_id)
+                    .groupBy('egresses.id');
+
+            return response.ok({archives, egresses});
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
+    }
 }
