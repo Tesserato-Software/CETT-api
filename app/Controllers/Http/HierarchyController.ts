@@ -243,7 +243,7 @@ export default class HierarchyController
                 .where('hierarchy_id', h_id)
                 .first();
 
-            if (users_on_hierarchy.length > 0)
+            if (users_on_hierarchy)
             {
                 return response.badRequest({ message: 'hierarchy_with_user' });
             }
