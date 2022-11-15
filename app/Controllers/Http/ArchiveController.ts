@@ -21,7 +21,8 @@ export default class ArchiveController
                     'archives.id',
                 )
                 .where('archives.school_id', user.school_id)
-                .groupBy('archives.id');
+                .groupBy('archives.id')
+                .orderBy('archives.id', 'asc');
 
             return response.ok(archives);
         }
@@ -133,8 +134,8 @@ export default class ArchiveController
             let archives = await Database
                     .from('archives')
                     .select ('archives.id')
-                    .where('archives.school_id', user.school_id)
                     .where('archives.id', archive_id)
+                    .andWhere('archives.school_id', user.school_id)
                     .groupBy('archives.id')
                     .firstOrFail(),
 
@@ -143,7 +144,8 @@ export default class ArchiveController
                     .select(
                         'egresses.arq_id',
                         'egresses.name',
-                        'egresses.archive_id'
+                        'egresses.archive_id',
+                        'egresses.id'
                     )
                     .where('egresses.school_id', user.school_id)
                     .groupBy('egresses.id');

@@ -1,8 +1,6 @@
 /* eslint-disable one-var */
-import { Request } from '@adonisjs/core/build/standalone';
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import Database from '@ioc:Adonis/Lucid/Database';
-import Hierarchy from 'App/Models/Hierarchy';
 
 export default class HierarchyController
 {
@@ -45,6 +43,50 @@ export default class HierarchyController
                 .groupBy('hierarchies.id');
 
             return response.ok(hierarchies);
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
+    }
+
+    public async show ({ response, auth, params }: HttpContextContract)
+    {
+        let { user } = auth,
+            { id } = params;
+
+        if(!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        try
+        {
+            let hierarchy = await Database
+                .from('hierarchies')
+                .select(
+                    'hierarchies.*',
+                    Database.raw(`
+                        CASE WHEN COUNT(users.id) > 0
+                        THEN (
+                            json_agg(
+                                json_build_object(
+                                    'id', users.id,
+                                    'full_name', users.full_name,
+                                    'email', users.email
+                                )
+                            )
+                        )
+                        ELSE '[]'
+                        END AS users
+                    `)
+                )
+                .where('hierarchies.id', id)
+                .leftJoin('users', 'users.hierarchy_id', 'hierarchies.id')
+                .groupBy('hierarchies.id');
+
+            return response.ok(hierarchy);
         }
         catch (error)
         {
@@ -214,4 +256,6 @@ export default class HierarchyController
             return response.internalServerError({ error });
         }
     }
+
+    // GET HIERARCHY BY ID
 }
