@@ -240,9 +240,10 @@ export default class HierarchyController
         {
             let users_on_hierarchy = await Database
                 .from('users')
-                .where('hierarchy_id', h_id);
+                .where('hierarchy_id', h_id)
+                .first();
 
-            if (users_on_hierarchy)
+            if (users_on_hierarchy.length > 0)
             {
                 return response.badRequest({ message: 'hierarchy_with_user' });
             }

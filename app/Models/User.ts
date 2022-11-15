@@ -33,6 +33,9 @@ export default class User extends BaseModel
     @column()
     public is_enabled: boolean;
 
+    @column()
+    public is_super_user: boolean;
+
     /* relations */
     @hasMany(() => Password, {
         foreignKey: 'user_id',
