@@ -22,7 +22,7 @@ export default class ArchiveController
                 )
                 .where('archives.school_id', user.school_id)
                 .groupBy('archives.id')
-                .orderBy('archives.id', 'desc');
+                .orderBy('archives.id', 'asc');
 
             return response.ok(archives);
         }
