@@ -19,11 +19,15 @@ export default class EgressController
 
         try
         {
-            let pagination;
+            let pagination, order, filters;
 
             if(request.method() === 'POST')
             {
-                pagination = await (await request.validate(ListValidator)).pagination;
+                let req = await request.validate(ListValidator);
+
+                pagination = req.pagination;
+                order = req.order;
+                filters = req.filters;
             }
 
             let query = await Database
@@ -31,9 +35,53 @@ export default class EgressController
                 .select('egresses.*')
                 .where('egresses.school_id', user.school_id)
                 .groupBy('egresses.id')
-                .if(pagination, query =>
+                .if((pagination), query =>
                 {
                     query.paginate(pagination?.page, pagination?.per_page_limit);
+                })
+                .if((order), query =>
+                {
+                    if (order.column)
+                    {
+                        query.orderBy(order.column, order.direction);
+                    }
+                    else if (order.columns)
+                    {
+                        order.columns.forEach((column: string) =>
+                        {
+                            query.orderBy(column, order.direction);
+                        });
+                    }
+                })
+                .if((filters), query =>
+                {
+                    filters.forEach((filter: any) =>
+                    {
+                        if (filter.operator === 'like')
+                        {
+                            query.where(filter.column, filter.operator, `%${filter.value}%`);
+                        }
+                        if (filter.operator === 'ilike')
+                        {
+                            query.where(filter.column, 'ilike', `%${filter.value}%`);
+                        }
+                        else if (filter.operator === 'between')
+                        {
+                            let [start, end] = filter.value.split(',');
+
+                            query.whereBetween(filter.column, [start, end]);
+                        }
+                        else if (filter.operator === 'in')
+                        {
+                            let values = filter.value.split(',');
+
+                            query.whereIn(filter.column, values);
+                        }
+                        else
+                        {
+                            query.where(filter.column, filter.operator, filter.value);
+                        }
+                    });
                 });
 
             return response.ok(query);
