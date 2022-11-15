@@ -53,14 +53,12 @@ export default class UserController
         }
     }
 
-    public async PswFirstAccess ({response, auth, request }: HttpContextContract)
+    public async PswFirstAccess ({ response, auth, request }: HttpContextContract)
     {
         const { user } = auth;
         const { password } = request.all();
-        const isInvalidRegister = !(
-            password?.length
-        );
-            //ADD CREATED_AT DATE
+        const isInvalidRegister = !password?.length;
+        //ADD CREATED_AT DATE
         if (!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
@@ -76,21 +74,19 @@ export default class UserController
             let hashed_pass = User.HashPassword(password),
                 adonis__hashed_pass = await Hash.make(password);
 
-            let pass_id = await Database
-                .table('passwords')
+            let pass_id = await Database.table('passwords')
                 .returning('id')
                 .insert({ password: hashed_pass });
 
-            let userFirstAccess = await Database
-                .table('users')
-                .returning('id')
-                .insert({
-                    password_id: pass_id[0],
-                    password: adonis__hashed_pass,
-                    should_reset_password: false,
-                });
+            let userFirstAccess = await Database.table('users').returning('id').insert({
+                password_id: pass_id[0],
+                password: adonis__hashed_pass,
+                should_reset_password: false,
+            });
 
-            await Database.from('passwords').where('id', pass_id[0]).update({ user_id: userFirstAccess[0] });
+            await Database.from('passwords')
+                .where('id', pass_id[0])
+                .update({ user_id: userFirstAccess[0] });
 
             return response.ok({ userFirstAccess });
         }
@@ -101,13 +97,11 @@ export default class UserController
         }
     }
 
-    public async PswMod ({response, auth, request}: HttpContextContract)
+    public async PswMod ({ response, auth, request }: HttpContextContract)
     {
         const { user } = auth;
         const { password } = request.all();
-        const isInvalidRegister = !(
-            password?.length
-        );
+        const isInvalidRegister = !password?.length;
 
         if (!user)
         {
@@ -124,19 +118,18 @@ export default class UserController
             let hashed_pass = User.HashPassword(password),
                 adonis__hashed_pass = await Hash.make(password);
 
-            let pass_id = await Database
-                .table('passwords')
+            let pass_id = await Database.table('passwords')
                 .returning('id')
                 .insert({ password: hashed_pass });
 
-            let userPswUp = await Database.table('users')
-                .returning('id')
-                .insert({
-                    password_id: pass_id[0],
-                    password: adonis__hashed_pass,
-                });
+            let userPswUp = await Database.table('users').returning('id').insert({
+                password_id: pass_id[0],
+                password: adonis__hashed_pass,
+            });
 
-            await Database.from('passwords').where('id', pass_id[0]).update({ user_id: userPswUp[0] });
+            await Database.from('passwords')
+                .where('id', pass_id[0])
+                .update({ user_id: userPswUp[0] });
 
             return response.ok({ userPswUp });
         }
@@ -155,31 +148,25 @@ export default class UserController
         try
         {
             let hashed_pass = User.HashPassword(password);
-            let pswNCheck = await Database
-                .from('passwords')
+            let pswNCheck = await Database.from('passwords')
                 .count('* as count')
                 .where('user_id', user_id);
 
             if (pswNCheck[0].count > 3)
             {
-                await Database
-                    .from('passwords')
+                await Database.from('passwords')
                     .where('user_id', user_id)
                     .orderBy('created_at', 'desc')
                     .limit(1)
                     .delete();
             }
 
-            let pswUp = await Database
-                .from('passwords')
-                .where('user_id', user_id)
-                .update({
-                    password: hashed_pass,
-                    created_at: DateTime.now(),
-                });
+            let pswUp = await Database.from('passwords').where('user_id', user_id).update({
+                password: hashed_pass,
+                created_at: DateTime.now(),
+            });
 
-            await Database
-                .from('users')
+            await Database.from('users')
                 .where('id', user_id)
                 .update({
                     password: await Hash.make(password),
@@ -230,32 +217,29 @@ export default class UserController
 
         try
         {
-            let user = await Database.from('users')
-                .select('users.*')
-                .where('users.id', user_id);
+            let user = await Database.from('users').select('users.*').where('users.id', user_id);
 
             return response.ok(user);
         }
         catch (error)
         {
             console.log(error);
-            return response.internalServerError({ message: 'Internal Server Error'});
+            return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
 
-    public async listDisableds ({response, auth }: HttpContextContract)
+    public async listDisableds ({ response, auth }: HttpContextContract)
     {
         let { user } = auth;
 
-        if(!user)
+        if (!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
 
         try
         {
-            let users = await Database
-                .from('users')
+            let users = await Database.from('users')
                 .where('school_id', user.id)
                 .where('is_enabled', false);
 
@@ -328,23 +312,22 @@ export default class UserController
             let hashed_pass = User.HashPassword(password),
                 adonis__hashed_pass = await Hash.make(password);
 
-            let pass_id = await Database
-                .table('passwords')
+            let pass_id = await Database.table('passwords')
                 .returning('id')
                 .insert({ password: hashed_pass });
 
-            let userCreated = await Database.table('users')
-                .returning('id')
-                .insert({
-                    full_name,
-                    email,
-                    password_id: pass_id[0],
-                    password: adonis__hashed_pass,
-                    hierarchy_id,
-                    school_id: user.school_id,
-                });
+            let userCreated = await Database.table('users').returning('id').insert({
+                full_name,
+                email,
+                password_id: pass_id[0],
+                password: adonis__hashed_pass,
+                hierarchy_id,
+                school_id: user.school_id,
+            });
 
-            await Database.from('passwords').where('id', pass_id[0]).update({ user_id: userCreated[0] });
+            await Database.from('passwords')
+                .where('id', pass_id[0])
+                .update({ user_id: userCreated[0] });
 
             return response.ok({ userCreated });
         }
@@ -404,14 +387,12 @@ export default class UserController
 
         try
         {
-            let userUpdated = await Database.from('users')
-                .where('id', user_id)
-                .update({
-                    full_name,
-                    password,
-                    email,
-                    hierarchy_id: role,
-                });
+            let userUpdated = await Database.from('users').where('id', user_id).update({
+                full_name,
+                password,
+                email,
+                hierarchy_id: role,
+            });
 
             return response.ok({ userUpdated });
         }
@@ -433,7 +414,7 @@ export default class UserController
 
         if (!user || !user.hierarchy_id)
         {
-            return response.unauthorized({message: 'Unauthorized'});
+            return response.unauthorized({ message: 'Unauthorized' });
         }
         else if (user && user.hierarchy_id)
         {
@@ -445,7 +426,7 @@ export default class UserController
 
                 if (!hierarchy?.can_delete)
                 {
-                    return response.unauthorized({ message: 'Unauthorized'});
+                    return response.unauthorized({ message: 'Unauthorized' });
                 }
             }
             catch (error)
@@ -461,9 +442,7 @@ export default class UserController
                 .where('egresses.last_edit_by', user_id)
                 .update({ last_edit_by: null });
 
-            await Database.from('users')
-                .where('users.id', user_id)
-                .delete();
+            await Database.from('users').where('users.id', user_id).delete();
 
             return response.ok({});
         }
