@@ -21,7 +21,8 @@ export default class ArchiveController
                     'archives.id',
                 )
                 .where('archives.school_id', user.school_id)
-                .groupBy('archives.id');
+                .groupBy('archives.id')
+                .orderBy('archives.id', 'desc');
 
             return response.ok(archives);
         }
