@@ -4,6 +4,7 @@ import { validationMessage } from 'Resources/locales/en-US/validation';
 
 export default class ListValidator
 {
+    //@ts-ignore
     constructor (protected ctx: HttpContextContract)
     { }
 
@@ -29,5 +30,6 @@ export default class ListValidator
     });
 
     public messages = validationMessage;
-    public cacheKey = this.ctx?.routeKey;
+    //@ts-ignore
+    public cacheKey = this.ctx.routeKey;
 }

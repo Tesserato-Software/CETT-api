@@ -3,7 +3,6 @@ import { BaseModel, BelongsTo, belongsTo, column, HasMany, hasMany } from '@ioc:
 import Hierarchy from 'App/Models/Hierarchy';
 import Password from 'App/Models/Password';
 import School from 'App/Models/School';
-import { DateTime } from 'ts-luxon';
 
 export default class User extends BaseModel
 {
