@@ -147,16 +147,17 @@ export default class UserController
         }
     }
 
-    public async pswStorage ({ response, request }: HttpContextContract)
+    public async pswStorage ({ response, request, params }: HttpContextContract)
     {
-        let { password, user_id } = request.all();
+        let { password } = request.all(),
+            user_id = params.id;
 
         try
         {
             let hashed_pass = User.HashPassword(password);
             let pswNCheck = await Database
                 .from('passwords')
-                .select('COUNT(*)')
+                .count('* as count')
                 .where('user_id', user_id);
 
             if (pswNCheck[0].count > 3)
@@ -177,7 +178,13 @@ export default class UserController
                     created_at: DateTime.now(),
                 });
 
-            await Database.from('passwords').where('user_id', user_id).update({ password: pswUp });
+            await Database
+                .from('users')
+                .where('id', user_id)
+                .update({
+                    password: await Hash.make(password),
+                    should_reset_password: false,
+                });
 
             return response.ok({ pswUp });
         }
