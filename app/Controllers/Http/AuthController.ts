@@ -61,6 +61,18 @@ export default class AuthController
 
         await user?.load('passwords');
 
+        if (user?.passwords.length >= 3)
+        {
+            // deleta o com id menor
+            let pswToDelete = await Database.from('passwords')
+                .select('id')
+                .where('user_id', user.id)
+                .orderBy('id', 'asc')
+                .first();
+
+            await Database.from('passwords').where('id', pswToDelete.id).delete();
+        }
+
         let password_created_at = user?.passwords?.find((password) => password.id === user.password_id)?.created_at;
         if (password_created_at)
         {

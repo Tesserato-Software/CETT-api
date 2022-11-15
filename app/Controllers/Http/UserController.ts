@@ -164,13 +164,16 @@ export default class UserController
                 .count('* as count')
                 .where('user_id', user_id);
 
-            if (pswNCheck[0].count > 3)
+            if (pswNCheck[0].count >= 3)
             {
-                await Database.from('passwords')
+                // deleta o com id menor
+                let pswToDelete = await Database.from('passwords')
+                    .select('id')
                     .where('user_id', user_id)
-                    .orderBy('created_at', 'desc')
-                    .limit(1)
-                    .delete();
+                    .orderBy('id', 'asc')
+                    .first();
+
+                await Database.from('passwords').where('id', pswToDelete.id).delete();
             }
 
             let pswUp = await Database
