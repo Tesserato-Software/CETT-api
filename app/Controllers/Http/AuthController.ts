@@ -75,7 +75,7 @@ export default class AuthController
             }
         }
 
-        await user?.load('hirarchy');
+        await user?.load('hierarchy');
 
         return response.send(user);
     }

@@ -46,7 +46,7 @@ export default class User extends BaseModel
         localKey: 'id',
         foreignKey: 'hierarchy_id',
     })
-    public hirarchy: BelongsTo<typeof Hierarchy>;
+    public hierarchy: BelongsTo<typeof Hierarchy>;
 
     @belongsTo(() => School, {
         localKey: 'id',
