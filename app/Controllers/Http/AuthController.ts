@@ -28,6 +28,10 @@ export default class AuthController
             {
                 token = await auth.use('api').attempt(email, password);
             }
+            else
+            {
+                return response.unauthorized({ message: 'Unauthorized' });
+            }
         }
 
         return response.send({ user, token: token?.token });

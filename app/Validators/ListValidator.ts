@@ -31,5 +31,5 @@ export default class ListValidator
 
     public messages = validationMessage;
     //@ts-ignore
-    public cacheKey = this.ctx.routeKey;
+    public cacheKey = this.ctx?.routeKey;
 }
