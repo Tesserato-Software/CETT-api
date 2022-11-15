@@ -507,28 +507,30 @@ export default class EgressController
             return response.badRequest({ message: 'Bad Request' });
         }
 
-        try
+        let errors: {error: string, row: any}[] = [];
+
+        // le o arquivo excel
+        const workbook = XLSX.readFile(file.tmpPath);
+        // pega a primeira aba do arquivo
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        // converte a aba em um array de objetos
+        let data = XLSX.utils.sheet_to_json(sheet);
+
+        // percorre o array de objetos
+        for (let row of data as any)
         {
-            // le o arquivo excel
-            const workbook = XLSX.readFile(file.tmpPath);
-            // pega a primeira aba do arquivo
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            // converte a aba em um array de objetos
-            let data = XLSX.utils.sheet_to_json(sheet);
+            // formata row.aniversario para o formato de data
+            row.Aniversário = DateTime
+                .fromISO(
+                    getJsDateFromExcel(row.Aniversário).toISOString()
+                )
+                .toFormat('yyyy-MM-dd');
 
-            // percorre o array de objetos
-            for (let row of data as any)
+            console.log('row ~ ', row);
+
+            // insere dados no banco
+            try
             {
-                // formata row.aniversario para o formato de data
-                row.Aniversário = DateTime
-                    .fromISO(
-                        getJsDateFromExcel(row.Aniversário).toISOString()
-                    )
-                    .toFormat('yyyy-MM-dd');
-
-                console.log('row ~ ', row);
-
-                // insere dados no banco
                 await Database
                     .table('egresses')
                     .insert({
@@ -539,13 +541,18 @@ export default class EgressController
                         responsible_name: row.Responsável,
                     });
             }
+            catch (error)
+            {
+                console.error(error);
+                errors.push({error, row});
+            }
+        }
 
-            return response.ok({ message: 'ok' });
-        }
-        catch (error)
+        if (errors.length)
         {
-            console.error(error);
-            return response.internalServerError({ message: 'Internal Server Error' });
+            return response.badRequest({ errors });
         }
+
+        return response.ok({ message: 'ok' });
     }
 }

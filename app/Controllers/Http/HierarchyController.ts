@@ -238,10 +238,14 @@ export default class HierarchyController
 
         try
         {
-            await Database
+            let users_on_hierarchy = await Database
                 .from('users')
-                .where('hierarchy_id', h_id)
-                .update({ hierarchy_id: null});
+                .where('hierarchy_id', h_id);
+
+            if (users_on_hierarchy)
+            {
+                return response.badRequest({ message: 'hierarchy_with_user' });
+            }
 
             await Database
                 .from('hierarchies')
