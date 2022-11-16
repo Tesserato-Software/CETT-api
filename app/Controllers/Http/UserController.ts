@@ -149,8 +149,7 @@ export default class UserController
         {
             let hashed_pass = User.HashPassword(password);
 
-            let exists = await Database
-                .from('passwords')
+            let exists = await Database.from('passwords')
                 .where('user_id', user_id)
                 .andWhere('password', hashed_pass)
                 .first();
@@ -176,14 +175,11 @@ export default class UserController
                 await Database.from('passwords').where('id', pswToDelete.id).delete();
             }
 
-            let pswUp = await Database
-                .table('passwords')
-                .returning('id')
-                .insert({
-                    password: hashed_pass,
-                    user_id: user_id,
-                    created_at: DateTime.now(),
-                });
+            let pswUp = await Database.table('passwords').returning('id').insert({
+                password: hashed_pass,
+                user_id: user_id,
+                created_at: DateTime.now(),
+            });
 
             await Database.from('users')
                 .where('id', user_id)
@@ -284,8 +280,7 @@ export default class UserController
         {
             try
             {
-                let hierarchy = await Database
-                    .from('hierarchies')
+                let hierarchy = await Database.from('hierarchies')
                     .where('id', user.hierarchy_id)
                     .firstOrFail();
 
@@ -303,9 +298,7 @@ export default class UserController
 
         try
         {
-            await Database.from('users')
-                .where('id', params.id)
-                .update({ is_enabled: true });
+            await Database.from('users').where('id', params.id).update({ is_enabled: true });
 
             return response.ok({ message: 'User reenabled' });
         }
@@ -377,12 +370,10 @@ export default class UserController
             let hashed_pass = User.HashPassword(password),
                 adonis__hashed_pass = await Hash.make(password);
 
-            let pass_id = await Database.table('passwords')
-                .returning('id')
-                .insert({
-                    password: hashed_pass,
-                    created_at: DateTime.now(),
-                });
+            let pass_id = await Database.table('passwords').returning('id').insert({
+                password: hashed_pass,
+                created_at: DateTime.now(),
+            });
 
             let userCreated = await Database.table('users').returning('id').insert({
                 full_name,
@@ -410,12 +401,12 @@ export default class UserController
     {
         const { user } = auth;
         const user_id = params.id;
-        const { email, full_name, password, role, school_id } = request.all();
+        const { email, full_name, should_reset_password, role, school_id } = request.all();
         const isInvalidRegister = !(
             school_id ||
             email?.length ||
             full_name?.length ||
-            password?.length ||
+            typeof should_reset_password === 'boolean' ||
             role
         );
 
@@ -457,7 +448,7 @@ export default class UserController
         {
             let userUpdated = await Database.from('users').where('id', user_id).update({
                 full_name,
-                password,
+                should_reset_password,
                 email,
                 hierarchy_id: role,
             });
