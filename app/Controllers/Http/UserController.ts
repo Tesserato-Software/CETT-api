@@ -256,8 +256,8 @@ export default class UserController
         try
         {
             let users = await Database.from('users')
-                .where('school_id', user.id)
-                .where('is_enabled', false);
+                .where('school_id', user.school_id)
+                .andWhere('is_enabled', false);
 
             return response.ok(users);
         }
