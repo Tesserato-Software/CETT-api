@@ -5,6 +5,7 @@ import ListValidator from 'App/Validators/ListValidator';
 import { DateTime } from 'luxon';
 import { getJsDateFromExcel } from 'excel-date-to-js';
 import XLSX from 'xlsx';
+import Egress from 'App/Models/Egress';
 
 export default class EgressController
 {
@@ -30,15 +31,11 @@ export default class EgressController
                 filters = req.filters;
             }
 
-            let query = await Database
-                .from('egresses')
+            let query = Egress
+                .query()
                 .select('egresses.*')
                 .where('egresses.school_id', user.school_id)
                 .groupBy('egresses.id')
-                .if((pagination), query =>
-                {
-                    query.paginate(pagination?.page, pagination?.per_page_limit);
-                })
                 .if((order), query =>
                 {
                     if (order.column)
@@ -84,7 +81,14 @@ export default class EgressController
                     });
                 });
 
-            return response.ok(query);
+            let egresses: any = await query;
+
+            if (pagination)
+            {
+                egresses = await (await query.paginate(pagination?.page, pagination?.per_page_limit)).serialize();
+            }
+
+            return response.send(egresses);
         }
         catch (error)
         {
