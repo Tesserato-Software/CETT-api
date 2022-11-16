@@ -112,8 +112,9 @@ export default class EgressController
         {
             let query = await Database
                 .from('egresses')
-                .select('egresses.*')
-                .where('egresses.id', user.id);
+                .where('id', egressId)
+                .andWhere('school_id', user.school_id)
+                .firstOrFail();
 
             return response.ok(query);
         }
