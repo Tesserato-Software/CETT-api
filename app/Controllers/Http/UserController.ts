@@ -272,6 +272,50 @@ export default class UserController
         }
     }
 
+    public async renableUser ({ response, auth, params }: HttpContextContract)
+    {
+        let { user } = auth;
+
+        if (!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+        else if (user && user.hierarchy_id)
+        {
+            try
+            {
+                let hierarchy = await Database
+                    .from('hierarchies')
+                    .where('id', user.hierarchy_id)
+                    .firstOrFail();
+
+                if (!hierarchy?.can_enable_users)
+                {
+                    return response.unauthorized({ message: 'Unauthorized' });
+                }
+            }
+            catch (error)
+            {
+                console.error(error);
+                return response.internalServerError({ error });
+            }
+        }
+
+        try
+        {
+            await Database.from('users')
+                .where('id', params.id)
+                .update({ is_enabled: true });
+
+            return response.ok({ message: 'User reenabled' });
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
+        }
+    }
+
     public async ListUsers ({ response, auth }: HttpContextContract)
     {
         let { user } = auth;
@@ -302,6 +346,7 @@ export default class UserController
         }
         catch (error)
         {
+            console.error(error);
             return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
