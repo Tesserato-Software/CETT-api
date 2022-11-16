@@ -539,6 +539,7 @@ export default class EgressController
                         arq_id: row.ID,
                         birth_date: row.Aniversário,
                         responsible_name: row.Responsável,
+                        school_id: user.school_id,
                     });
             }
             catch (error)
