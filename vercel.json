@@ -1,0 +1,45 @@
+{
+    "buildCommand": "npm run build",
+    "typescript": true,
+    "metaFiles": [
+        ".env",
+        {
+            "pattern": "public/**",
+            "reloadServer": false
+        },
+        {
+            "pattern": "resources/views/**/*.edge",
+            "reloadServer": false
+        }
+    ],
+    "commands": [
+        "./commands",
+        "@adonisjs/core/build/commands",
+        "@adonisjs/repl/build/commands",
+        "@adonisjs/lucid/build/commands",
+        "@adonisjs/bouncer/build/commands",
+        "adonis5-swagger/build/commands"
+    ],
+    "exceptionHandlerNamespace": "App/Exceptions/Handler",
+    "aliases": {
+        "App": "app",
+        "Config": "config",
+        "Database": "database",
+        "Contracts": "contracts",
+        "Resources": "resources"
+    },
+    "preloads": [
+        "./start/routes",
+        "./start/kernel",
+        "./start/bouncer"
+    ],
+    "providers": [
+        "./providers/AppProvider",
+        "@adonisjs/core",
+        "@adonisjs/auth",
+        "@adonisjs/lucid",
+        "@adonisjs/bouncer",
+        "@adonisjs/drive-s3",
+        "@adonisjs/view"
+    ],
+}

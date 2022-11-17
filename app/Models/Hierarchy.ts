@@ -17,6 +17,9 @@ export default class Hierarchy extends BaseModel
     public can_update: boolean;
 
     @column()
+    public can_enable_users: boolean;
+
+    @column()
     public school_id: number;
 
     /* relations */

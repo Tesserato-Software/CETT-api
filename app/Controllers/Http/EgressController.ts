@@ -5,6 +5,7 @@ import ListValidator from 'App/Validators/ListValidator';
 import { DateTime } from 'luxon';
 import { getJsDateFromExcel } from 'excel-date-to-js';
 import XLSX from 'xlsx';
+import Egress from 'App/Models/Egress';
 
 export default class EgressController
 {
@@ -19,24 +20,75 @@ export default class EgressController
 
         try
         {
-            let pagination;
+            let pagination, order, filters;
 
             if(request.method() === 'POST')
             {
-                pagination = await (await request.validate(ListValidator)).pagination;
+                let req = await request.validate(ListValidator);
+
+                pagination = req.pagination;
+                order = req.order;
+                filters = req.filters;
             }
 
-            let query = await Database
-                .from('egresses')
+            let query = Egress
+                .query()
                 .select('egresses.*')
                 .where('egresses.school_id', user.school_id)
                 .groupBy('egresses.id')
-                .if(pagination, query =>
+                .if((order), query =>
                 {
-                    query.paginate(pagination?.page, pagination?.per_page_limit);
+                    if (order.column)
+                    {
+                        query.orderBy(order.column, order.direction);
+                    }
+                    else if (order.columns)
+                    {
+                        order.columns.forEach((column: string) =>
+                        {
+                            query.orderBy(column, order.direction);
+                        });
+                    }
+                })
+                .if((filters), query =>
+                {
+                    filters.forEach((filter: any) =>
+                    {
+                        if (filter.operator === 'like')
+                        {
+                            query.where(filter.column, filter.operator, `%${filter.value}%`);
+                        }
+                        if (filter.operator === 'ilike')
+                        {
+                            query.where(filter.column, 'ilike', `%${filter.value}%`);
+                        }
+                        else if (filter.operator === 'between')
+                        {
+                            let [start, end] = filter.value.split(',');
+
+                            query.whereBetween(filter.column, [start, end]);
+                        }
+                        else if (filter.operator === 'in')
+                        {
+                            let values = filter.value.split(',');
+
+                            query.whereIn(filter.column, values);
+                        }
+                        else
+                        {
+                            query.where(filter.column, filter.operator, filter.value);
+                        }
+                    });
                 });
 
-            return response.ok(query);
+            let egresses: any = await query;
+
+            if (pagination)
+            {
+                egresses = await (await query.paginate(pagination?.page, pagination?.per_page_limit)).serialize();
+            }
+
+            return response.send(egresses);
         }
         catch (error)
         {
@@ -64,8 +116,9 @@ export default class EgressController
         {
             let query = await Database
                 .from('egresses')
-                .select('egresses.*')
-                .where('egresses.id', user.id);
+                .where('id', egressId)
+                .andWhere('school_id', user.school_id)
+                .firstOrFail();
 
             return response.ok(query);
         }
@@ -319,10 +372,10 @@ export default class EgressController
         {
             let egresses = await Database.from('egresses')
                 .select(
-                    'egresses.arq_id',
+                    'egresses.id',
                     'egresses.name',
                     'egresses.CGM_id',
-                    'egresses.archive_id',
+
                 )
                 .where('egresses.id', egress_id)
                 .andWhere('egresses.school_id', user.school_id)
@@ -459,28 +512,30 @@ export default class EgressController
             return response.badRequest({ message: 'Bad Request' });
         }
 
-        try
+        let errors: {error: string, row: any}[] = [];
+
+        // le o arquivo excel
+        const workbook = XLSX.readFile(file.tmpPath);
+        // pega a primeira aba do arquivo
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        // converte a aba em um array de objetos
+        let data = XLSX.utils.sheet_to_json(sheet);
+
+        // percorre o array de objetos
+        for (let row of data as any)
         {
-            // le o arquivo excel
-            const workbook = XLSX.readFile(file.tmpPath);
-            // pega a primeira aba do arquivo
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            // converte a aba em um array de objetos
-            let data = XLSX.utils.sheet_to_json(sheet);
+            // formata row.aniversario para o formato de data
+            row.Aniversário = DateTime
+                .fromISO(
+                    getJsDateFromExcel(row.Aniversário).toISOString()
+                )
+                .toFormat('yyyy-MM-dd');
 
-            // percorre o array de objetos
-            for (let row of data as any)
+            console.log('row ~ ', row);
+
+            // insere dados no banco
+            try
             {
-                // formata row.aniversario para o formato de data
-                row.Aniversário = DateTime
-                    .fromISO(
-                        getJsDateFromExcel(row.Aniversário).toISOString()
-                    )
-                    .toFormat('yyyy-MM-dd');
-
-                console.log('row ~ ', row);
-
-                // insere dados no banco 
                 await Database
                     .table('egresses')
                     .insert({
@@ -489,15 +544,21 @@ export default class EgressController
                         arq_id: row.ID,
                         birth_date: row.Aniversário,
                         responsible_name: row.Responsável,
+                        school_id: user.school_id,
                     });
             }
+            catch (error)
+            {
+                console.error(error);
+                errors.push({error, row});
+            }
+        }
 
-            return response.ok({ message: 'ok' });
-        }
-        catch (error)
+        if (errors.length)
         {
-            console.error(error);
-            return response.internalServerError({ message: 'Internal Server Error' });
+            return response.badRequest({ errors });
         }
+
+        return response.ok({ message: 'ok' });
     }
 }

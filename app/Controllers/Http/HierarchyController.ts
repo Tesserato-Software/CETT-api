@@ -1,12 +1,9 @@
 /* eslint-disable one-var */
-import { Request } from '@adonisjs/core/build/standalone';
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import Database from '@ioc:Adonis/Lucid/Database';
-import Hierarchy from 'App/Models/Hierarchy';
 
 export default class HierarchyController
 {
-
     // LIST
     public async index ({ response, auth }: HttpContextContract)
     {
@@ -33,8 +30,7 @@ export default class HierarchyController
                                     'full_name', users.full_name,
                                     'email', users.email,
                                     'hierarchy_id', users.hierarchy_id,
-                                    'school_id', users.school_id,
-                                    'first_access', users.first_access
+                                    'school_id', users.school_id
                                 )
                             )
                         )
@@ -55,11 +51,55 @@ export default class HierarchyController
         }
     }
 
+    public async show ({ response, auth, params }: HttpContextContract)
+    {
+        let { user } = auth,
+            { id } = params;
+
+        if(!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        try
+        {
+            let hierarchy = await Database
+                .from('hierarchies')
+                .select(
+                    'hierarchies.*',
+                    Database.raw(`
+                        CASE WHEN COUNT(users.id) > 0
+                        THEN (
+                            json_agg(
+                                json_build_object(
+                                    'id', users.id,
+                                    'full_name', users.full_name,
+                                    'email', users.email
+                                )
+                            )
+                        )
+                        ELSE '[]'
+                        END AS users
+                    `)
+                )
+                .where('hierarchies.id', id)
+                .leftJoin('users', 'users.hierarchy_id', 'hierarchies.id')
+                .groupBy('hierarchies.id');
+
+            return response.ok(hierarchy);
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
+    }
+
     // CREATE
     public async create ({ response, auth, request }: HttpContextContract)
     {
         const { user } = auth;
-        const { name, can_update, can_delete } = request.all();
+        const { name, can_update, can_delete, can_enable_users } = request.all();
         const isInvalidRegister = !(
             name?.length
         );
@@ -76,13 +116,14 @@ export default class HierarchyController
 
         try
         {
-                let hierarchyCreate = await Database.table('hierarchies')
+            let hierarchyCreate = await Database.table('hierarchies')
                 .returning('id')
                 .insert({
                     name,
                     can_update,
-                    can_delete, 
-                    school_id: user.school_id
+                    can_delete,
+                    can_enable_users,
+                    school_id: user.school_id,
                 });
 
             return response.ok({ hierarchyCreate });
@@ -94,13 +135,12 @@ export default class HierarchyController
         }
     }
 
-
     // UPDATE    
     public async update ({ response, auth, request, params }: HttpContextContract)
     {
         const { user } = auth;
         const user_id = params.id;
-        const { name, can_delete, can_update } = request.all();
+        const { name, can_delete, can_update, can_enable_users } = request.all();
         const isInvalidRegister = !(
             name?.length
         );
@@ -133,7 +173,7 @@ export default class HierarchyController
                     return response.unauthorized({ message: 'Unauthorized' });
                 }
             }
-        
+
             catch (error)
             {
                 console.error(error);
@@ -141,7 +181,7 @@ export default class HierarchyController
             }
         }
 
-        try 
+        try
         {
             let hierarchyUpdated = await Database.from('hierarchies')
                 .where('id', params.id)
@@ -149,17 +189,16 @@ export default class HierarchyController
                     name,
                     can_delete,
                     can_update,
+                    can_enable_users,
                 });
 
             return response.ok({ hierarchyUpdated });
         }
         catch (error)
         {
-            return response.internalServerError({ message: 'Internal Server Error' })
+            return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
-
-
 
     // DELETE
     public async delete ({ response, auth, params }: HttpContextContract)
@@ -199,10 +238,15 @@ export default class HierarchyController
 
         try
         {
-            await Database
+            let users_on_hierarchy = await Database
                 .from('users')
                 .where('hierarchy_id', h_id)
-                .update({ hierarchy_id: null})
+                .first();
+
+            if (users_on_hierarchy)
+            {
+                return response.badRequest({ message: 'hierarchy_with_user' });
+            }
 
             await Database
                 .from('hierarchies')
@@ -218,4 +262,5 @@ export default class HierarchyController
         }
     }
 
+    // GET HIERARCHY BY ID
 }

@@ -7,10 +7,11 @@ export default class SchoolController
     {
         let { user } = auth;
 
-        if(!user)
+        if(!user || !user.is_super_user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
+
         try
         {
             let school = await Database
@@ -35,7 +36,7 @@ export default class SchoolController
         let { user } = auth,
             { name } = request.all();
 
-        if(!user)
+        if(!user || !user.is_super_user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
@@ -95,7 +96,7 @@ export default class SchoolController
         let { user } = auth,
             { name } = request.all();
 
-        if(!user)
+        if(!user || !user.is_super_user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
@@ -120,7 +121,7 @@ export default class SchoolController
     {
         let { user } = auth;
 
-        if(!user)
+        if(!user || !user.is_super_user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }

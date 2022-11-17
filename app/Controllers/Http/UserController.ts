@@ -1,4 +1,5 @@
 /* eslint-disable one-var */
+import Hash from '@ioc:Adonis/Core/Hash';
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext';
 import Database from '@ioc:Adonis/Lucid/Database';
 import User from 'App/Models/User';
@@ -52,63 +53,150 @@ export default class UserController
         }
     }
 
-    public async PswFirstAccess ({response, auth, request }: HttpContextContract)
+    public async PswFirstAccess ({ response, auth, request }: HttpContextContract)
     {
-        let { user } = auth,
-            { password } = request.all(),
-            time = DateTime.now();
-
-        if(!user)
+        const { user } = auth;
+        const { password } = request.all();
+        const isInvalidRegister = !password?.length;
+        //ADD CREATED_AT DATE
+        if (!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
 
-        let pswE = User.HashPassword(password);
+        if (isInvalidRegister)
+        {
+            return response.badRequest({ message: 'Bad Request' });
+        }
 
         try
         {
-            await Database
-                .from('users')
-                .where('id', user.id)
-                .update({ password:pswE, first_access:time });
+            let hashed_pass = User.HashPassword(password),
+                adonis__hashed_pass = await Hash.make(password);
 
-            return response.ok('password set sucessfully');
+            let pass_id = await Database.table('passwords')
+                .returning('id')
+                .insert({ password: hashed_pass });
+
+            let userFirstAccess = await Database.table('users').returning('id').insert({
+                password_id: pass_id[0],
+                password: adonis__hashed_pass,
+                should_reset_password: false,
+            });
+
+            await Database.from('passwords')
+                .where('id', pass_id[0])
+                .update({ user_id: userFirstAccess[0] });
+
+            return response.ok({ userFirstAccess });
         }
         catch (error)
         {
             console.error(error);
-            return response.internalServerError({ error });
+            return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
 
-    public async PswMod ({response, auth, request}: HttpContextContract)
+    public async PswMod ({ response, auth, request }: HttpContextContract)
     {
-        let { user } = auth,
-            { password } = request.all();
+        const { user } = auth;
+        const { password } = request.all();
+        const isInvalidRegister = !password?.length;
 
-        if(!user)
+        if (!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
 
-        let pswE = User.HashPassword(password);
+        if (isInvalidRegister)
+        {
+            return response.badRequest({ message: 'Bad Request' });
+        }
 
         try
         {
-            await Database
-                .from('users')
-                .where('id', user.id)
-                .update({ password: pswE });
+            let hashed_pass = User.HashPassword(password),
+                adonis__hashed_pass = await Hash.make(password);
 
-            return response.ok('password updated');
+            let pass_id = await Database.table('passwords')
+                .returning('id')
+                .insert({ password: hashed_pass });
+
+            let userPswUp = await Database.table('users').returning('id').insert({
+                password_id: pass_id[0],
+                password: adonis__hashed_pass,
+            });
+
+            await Database.from('passwords')
+                .where('id', pass_id[0])
+                .update({ user_id: userPswUp[0] });
+
+            return response.ok({ userPswUp });
         }
         catch (error)
         {
             console.error(error);
-            return response.internalServerError({ error });
+            return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
 
+    public async pswStorage ({ response, request, params }: HttpContextContract)
+    {
+        let { password } = request.all(),
+            user_id = params.id;
+
+        try
+        {
+            let hashed_pass = User.HashPassword(password);
+
+            let exists = await Database.from('passwords')
+                .where('user_id', user_id)
+                .andWhere('password', hashed_pass)
+                .first();
+
+            if (exists)
+            {
+                return response.badRequest({ exists: true });
+            }
+
+            let pswNCheck = await Database.from('passwords')
+                .count('* as count')
+                .where('user_id', user_id);
+
+            if (pswNCheck[0].count >= 3)
+            {
+                // deleta o com id menor
+                let pswToDelete = await Database.from('passwords')
+                    .select('id')
+                    .where('user_id', user_id)
+                    .orderBy('id', 'asc')
+                    .first();
+
+                await Database.from('passwords').where('id', pswToDelete.id).delete();
+            }
+
+            let pswUp = await Database.table('passwords').returning('id').insert({
+                password: hashed_pass,
+                user_id: user_id,
+                created_at: DateTime.now(),
+            });
+
+            await Database.from('users')
+                .where('id', user_id)
+                .update({
+                    password_id: pswUp[0],
+                    password: await Hash.make(password),
+                    should_reset_password: false,
+                });
+
+            return response.ok({ pswUp });
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
+    }
     public async GetUserById ({ response, auth, params }: HttpContextContract)
     {
         const { user } = auth;
@@ -145,16 +233,79 @@ export default class UserController
 
         try
         {
-            let user = await Database.from('users')
-                .select('users.*')
-                .where('users.id', user_id);
+            let user = await Database.from('users').select('users.*').where('users.id', user_id);
 
             return response.ok(user);
         }
         catch (error)
         {
             console.log(error);
-            return response.internalServerError({ message: 'Internal Server Error'});
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
+    }
+
+    public async listDisableds ({ response, auth }: HttpContextContract)
+    {
+        let { user } = auth;
+
+        if (!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        try
+        {
+            let users = await Database.from('users')
+                .where('school_id', user.school_id)
+                .andWhere('is_enabled', false);
+
+            return response.ok(users);
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
+        }
+    }
+
+    public async renableUser ({ response, auth, params }: HttpContextContract)
+    {
+        let { user } = auth;
+
+        if (!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+        else if (user && user.hierarchy_id)
+        {
+            try
+            {
+                let hierarchy = await Database.from('hierarchies')
+                    .where('id', user.hierarchy_id)
+                    .firstOrFail();
+
+                if (!hierarchy?.can_enable_users)
+                {
+                    return response.unauthorized({ message: 'Unauthorized' });
+                }
+            }
+            catch (error)
+            {
+                console.error(error);
+                return response.internalServerError({ error });
+            }
+        }
+
+        try
+        {
+            await Database.from('users').where('id', params.id).update({ is_enabled: true });
+
+            return response.ok({ message: 'User reenabled' });
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
         }
     }
 
@@ -175,9 +326,9 @@ export default class UserController
                     'users.full_name',
                     'users.email',
                     Database.raw(`
-                            json_agg(
-                                hierarchies.*
-                            ) AS hierarchy
+                        json_agg(
+                            hierarchies.*
+                        ) AS hierarchy
                     `)
                 )
                 .where('users.school_id', user.school_id)
@@ -188,6 +339,7 @@ export default class UserController
         }
         catch (error)
         {
+            console.error(error);
             return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
@@ -215,20 +367,32 @@ export default class UserController
 
         try
         {
-            let userCreated = await Database.table('users')
-                .returning('id')
-                .insert({
-                    full_name,
-                    email,
-                    password,
-                    hierarchy_id,
-                    school_id: user.school_id,
-                });
+            let hashed_pass = User.HashPassword(password),
+                adonis__hashed_pass = await Hash.make(password);
+
+            let pass_id = await Database.table('passwords').returning('id').insert({
+                password: hashed_pass,
+                created_at: DateTime.now(),
+            });
+
+            let userCreated = await Database.table('users').returning('id').insert({
+                full_name,
+                email,
+                password_id: pass_id[0],
+                password: adonis__hashed_pass,
+                hierarchy_id,
+                school_id: user.school_id,
+            });
+
+            await Database.from('passwords')
+                .where('id', pass_id[0])
+                .update({ user_id: userCreated[0] });
 
             return response.ok({ userCreated });
         }
         catch (error)
         {
+            console.error(error);
             return response.internalServerError({ message: 'Internal Server Error' });
         }
     }
@@ -237,12 +401,12 @@ export default class UserController
     {
         const { user } = auth;
         const user_id = params.id;
-        const { email, full_name, password, role, school_id } = request.all();
+        const { email, full_name, should_reset_password, role, school_id } = request.all();
         const isInvalidRegister = !(
             school_id ||
             email?.length ||
             full_name?.length ||
-            password?.length ||
+            typeof should_reset_password === 'boolean' ||
             role
         );
 
@@ -282,14 +446,12 @@ export default class UserController
 
         try
         {
-            let userUpdated = await Database.from('users')
-                .where('id', user_id)
-                .update({
-                    full_name,
-                    password,
-                    email,
-                    hierarchy_id: role,
-                });
+            let userUpdated = await Database.from('users').where('id', user_id).update({
+                full_name,
+                should_reset_password,
+                email,
+                hierarchy_id: role,
+            });
 
             return response.ok({ userUpdated });
         }
@@ -311,7 +473,7 @@ export default class UserController
 
         if (!user || !user.hierarchy_id)
         {
-            return response.unauthorized({message: 'Unauthorized'});
+            return response.unauthorized({ message: 'Unauthorized' });
         }
         else if (user && user.hierarchy_id)
         {
@@ -323,7 +485,7 @@ export default class UserController
 
                 if (!hierarchy?.can_delete)
                 {
-                    return response.unauthorized({ message: 'Unauthorized'});
+                    return response.unauthorized({ message: 'Unauthorized' });
                 }
             }
             catch (error)
@@ -339,9 +501,7 @@ export default class UserController
                 .where('egresses.last_edit_by', user_id)
                 .update({ last_edit_by: null });
 
-            await Database.from('users')
-                .where('users.id', user_id)
-                .delete();
+            await Database.from('users').where('users.id', user_id).delete();
 
             return response.ok({});
         }

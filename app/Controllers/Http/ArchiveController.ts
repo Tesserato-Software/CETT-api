@@ -14,14 +14,11 @@ export default class ArchiveController
 
         try
         {
-            let archives = await Database
-                .from('archives')
-                .select(
-                    'archives.school_id',
-                    'archives.id',
-                )
+            let archives = await Database.from('archives')
+                .select('archives.school_id', 'archives.id')
                 .where('archives.school_id', user.school_id)
-                .groupBy('archives.id');
+                .groupBy('archives.id')
+                .orderBy('archives.id', 'asc');
 
             return response.ok(archives);
         }
@@ -36,24 +33,26 @@ export default class ArchiveController
     {
         let { user } = auth;
 
-        if(!user) //if u ser is not authenticated
+        if (!user)
+        {
+            //if u ser is not authenticated
+            return response.unauthorized({ message: 'Unauthorized' }); //retorna não autorizado
+        }
+        if (!user.school_id)
         {
             return response.unauthorized({ message: 'Unauthorized' }); //retorna não autorizado
         }
-        if(!user.school_id)
-        {
-            return response.unauthorized({ message: 'Unauthorized' }); //retorna não autorizado 
-        }
         try
         {
-            let archives = await Database //tenta inserir dados na tabela archives 
-                .insertQuery()
+            let archives = await Database.insertQuery() //tenta inserir dados na tabela archives
                 .table('archives')
-                .insert({school_id: user.school_id});
+                .insert({ school_id: user.school_id });
 
-            return response.ok({archives}); //retorna os dados criados
+            return response.ok({ archives }); //retorna os dados criados
         }
-        catch (error) // caso de algum erro 
+        catch (
+            error // caso de algum erro
+        )
         {
             console.error(error);
             return response.internalServerError({ message: 'Internal Server Error' }); //retorna erro de sevidor interno
@@ -84,7 +83,7 @@ export default class ArchiveController
 
                 if (!hierarchy?.can_delete)
                 {
-                    return response.unauthorized({ message: 'Unauthorized'});
+                    return response.unauthorized({ message: 'Unauthorized' });
                 }
             }
             catch (error)
@@ -100,9 +99,7 @@ export default class ArchiveController
                 .where('archive_id', archive_id)
                 .update({ archive_id: null });
 
-            await Database.from('archives')
-                .where('id',archive_id)
-                .delete();
+            await Database.from('archives').where('id', archive_id).delete();
 
             return response.ok({});
         }
@@ -113,12 +110,12 @@ export default class ArchiveController
         }
     }
 
-    public async DashBoardAttachEgress ({ response, auth, params}: HttpContextContract)
+    public async DashBoardAttachEgress ({ response, auth, params }: HttpContextContract)
     {
         let { user } = auth,
             archive_id = params.id;
 
-        if(!user)
+        if (!user)
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
@@ -130,25 +127,23 @@ export default class ArchiveController
 
         try
         {
-            let archives = await Database
-                    .from('archives')
-                    .select ('archives.id')
-                    .where('archives.school_id', user.school_id)
+            let archives = await Database.from('archives')
+                    .select('archives.id')
                     .where('archives.id', archive_id)
+                    .andWhere('archives.school_id', user.school_id)
                     .groupBy('archives.id')
                     .firstOrFail(),
-
-                egresses = await Database
-                    .from('egresses')
+                egresses = await Database.from('egresses')
                     .select(
                         'egresses.arq_id',
                         'egresses.name',
-                        'egresses.archive_id'
+                        'egresses.archive_id',
+                        'egresses.id'
                     )
                     .where('egresses.school_id', user.school_id)
                     .groupBy('egresses.id');
 
-            return response.ok({archives, egresses});
+            return response.ok({ archives, egresses });
         }
         catch (error)
         {
@@ -157,7 +152,7 @@ export default class ArchiveController
         }
     }
 
-    public async AttachEgress ({ response, auth, request,params }: HttpContextContract)
+    public async AttachEgress ({ response, auth, request, params }: HttpContextContract)
     {
         let { user } = auth,
             archive_id = params.id,
@@ -168,15 +163,14 @@ export default class ArchiveController
             return response.unauthorized({ message: 'Unauthorized' });
         }
 
-        if (!egress || !egress?.length || egress.find(e => isNaN(+e)))
+        if (!egress || !egress?.length || egress.find((e) => isNaN(+e)))
         {
             return response.badRequest({ message: 'Bad Request' });
         }
 
         try
         {
-            await Database
-                .from('egresses')
+            await Database.from('egresses')
                 .whereIn('id', egress)
                 .andWhere('school_id', user.school_id)
                 .update({ archive_id });
@@ -200,20 +194,65 @@ export default class ArchiveController
             return response.unauthorized({ message: 'Unauthorized' });
         }
 
-        if (!egress || !egress?.length || egress.find(e => isNaN(+e)))
+        if (!egress || !egress?.length || egress.find((e) => isNaN(+e)))
         {
             return response.badRequest({ message: 'Bad Request' });
         }
 
         try
         {
-            await Database
-                .from('egresses')
+            await Database.from('egresses')
                 .whereIn('id', egress)
                 .andWhere('school_id', user.school_id)
                 .update({ archive_id: null });
 
             return response.ok('updated');
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ message: 'Internal Server Error' });
+        }
+    }
+
+    public async DashBoardDettachEgress ({ response, auth, params}: HttpContextContract)
+    {
+        let { user } = auth,
+            archive_id = params.id;
+
+        if(!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        if (!archive_id)
+        {
+            return response.badRequest({ message: 'Missing parameters' });
+        }
+
+        try
+        {
+            let archives = await Database
+                    .from('archives')
+                    .select ('archives.id')
+                    .where('archives.id', archive_id)
+                    .andWhere('archives.school_id', user.school_id)
+                    .groupBy('archives.id')
+                    .firstOrFail(),
+
+                egresses = await Database
+                    .from('egresses')
+                    .select(
+                        'egresses.arq_id',
+                        'egresses.name',
+                        'egresses.archive_id',
+                        'egresses.id'
+                    )
+                    .where('egresses.school_id', user.school_id)
+                    .andWhere('egresses.archive_id',archive_id)
+                    .groupBy('egresses.id');
+
+            return response.ok({archives, egresses});
         }
         catch (error)
         {
