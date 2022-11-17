@@ -401,13 +401,13 @@ export default class UserController
     {
         const { user } = auth;
         const user_id = params.id;
-        const { email, full_name, should_reset_password, role, school_id } = request.all();
+        const { email, full_name, should_reset_password, hierarchy_id, school_id } = request.all();
         const isInvalidRegister = !(
             school_id ||
             email?.length ||
             full_name?.length ||
             typeof should_reset_password === 'boolean' ||
-            role
+            hierarchy_id
         );
 
         if (!user_id)
@@ -450,7 +450,7 @@ export default class UserController
                 full_name,
                 should_reset_password,
                 email,
-                hierarchy_id: role,
+                hierarchy_id,
             });
 
             return response.ok({ userUpdated });
