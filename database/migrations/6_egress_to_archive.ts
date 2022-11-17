@@ -12,7 +12,7 @@ export default class Egress extends BaseSchema
                 .integer('archive_id')
                 .unsigned()
                 .references('id')
-                .inTable('archive');
+                .inTable('archives');
         });
     }
 

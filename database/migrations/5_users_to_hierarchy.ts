@@ -12,7 +12,7 @@ export default class Users extends BaseSchema
                 .integer('hierarchy_id')
                 .unsigned()
                 .references('id')
-                .inTable('hierarchy')
+                .inTable('hierarchies')
                 .onDelete('CASCADE');
         });
     }

@@ -2,7 +2,7 @@ import BaseSchema from '@ioc:Adonis/Lucid/Schema';
 
 export default class Archive extends BaseSchema
 {
-    protected tableName = 'archivies';
+    protected tableName = 'archives';
 
     public async up ()
     {
