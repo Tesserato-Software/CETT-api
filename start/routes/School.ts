@@ -6,6 +6,8 @@ Route.group(() =>
 {
     //GET /school
     Route.get('list', 'SchoolController.list');
+    // GET / get school by id
+    Route.get('get-school/:id', 'SchoolController.GetSchoolById');
     //POST /school
     Route.post('create', 'SchoolController.create');
     //PUT /school
