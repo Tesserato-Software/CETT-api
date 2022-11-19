@@ -97,6 +97,95 @@ export default class EgressController
         }
     }
 
+    public async listDeleteds ({ response, auth, request }: HttpContextContract)
+    {
+        let { user } = auth;
+
+        if (!user)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+
+        try
+        {
+            let pagination, order, filters;
+
+            if(request.method() === 'POST')
+            {
+                let req = await request.validate(ListValidator);
+
+                pagination = req.pagination;
+                order = req.order;
+                filters = req.filters;
+            }
+
+            let query = Egress
+                .query()
+                .select('egresses.*')
+                .where('egresses.school_id', user.school_id)
+                .andWhereNotNull('egresses.deleted_at')
+                .groupBy('egresses.id')
+                .if((order), query =>
+                {
+                    if (order.column)
+                    {
+                        query.orderBy(order.column, order.direction);
+                    }
+                    else if (order.columns)
+                    {
+                        order.columns.forEach((column: string) =>
+                        {
+                            query.orderBy(column, order.direction);
+                        });
+                    }
+                })
+                .if((filters), query =>
+                {
+                    filters.forEach((filter: any) =>
+                    {
+                        if (filter.operator === 'like')
+                        {
+                            query.where(filter.column, filter.operator, `%${filter.value}%`);
+                        }
+                        if (filter.operator === 'ilike')
+                        {
+                            query.where(filter.column, 'ilike', `%${filter.value}%`);
+                        }
+                        else if (filter.operator === 'between')
+                        {
+                            let [start, end] = filter.value.split(',');
+
+                            query.whereBetween(filter.column, [start, end]);
+                        }
+                        else if (filter.operator === 'in')
+                        {
+                            let values = filter.value.split(',');
+
+                            query.whereIn(filter.column, values);
+                        }
+                        else
+                        {
+                            query.where(filter.column, filter.operator, filter.value);
+                        }
+                    });
+                });
+
+            let egresses: any = await query;
+
+            if (pagination)
+            {
+                egresses = await (await query.paginate(pagination?.page, pagination?.per_page_limit)).serialize();
+            }
+
+            return response.send(egresses);
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
+        }
+    }
+
     public async show ({ response, auth, params }: HttpContextContract)
     {
         let { user } = auth,
@@ -316,6 +405,40 @@ export default class EgressController
         {
             return response.unauthorized({ message: 'Unauthorized' });
         }
+
+        try
+        {
+            let egress = await Database
+                .from('egresses')
+                .where('id', egress_id)
+                .update({
+                    last_edit_by: user.id,
+                    deleted_at: DateTime.now(),
+                });
+
+            return response.ok({ egress });
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
+        }
+    }
+
+    public async hardDelete ({ response, auth, params }: HttpContextContract)
+    {
+        let { user } = auth,
+            egress_id = params.id;
+
+        if (!egress_id)
+        {
+            return response.badRequest('egress id must be a number');
+        }
+
+        if (!user || !user.hierarchy_id)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
         else if (user && user.hierarchy_id)
         {
             try
@@ -343,6 +466,60 @@ export default class EgressController
                 .from('egresses')
                 .where('id', egress_id)
                 .delete();
+
+            return response.ok({ egress });
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
+        }
+    }
+
+    public async restore ({ response, auth, params }: HttpContextContract)
+    {
+        let { user } = auth,
+            egress_id = params.id;
+
+        if (!egress_id)
+        {
+            return response.badRequest('egress id must be a number');
+        }
+
+        if (!user || !user.hierarchy_id)
+        {
+            return response.unauthorized({ message: 'Unauthorized' });
+        }
+        else if (user && user.hierarchy_id)
+        {
+            try
+            {
+                let hierarchy = await Database
+                    .from('hierarchies')
+                    .where('id', user.hierarchy_id)
+                    .firstOrFail();
+
+                if (!hierarchy?.can_delete)
+                {
+                    return response.unauthorized({ message: 'Unauthorized' });
+                }
+            }
+            catch (error)
+            {
+                console.error(error);
+                return response.internalServerError({ error });
+            }
+        }
+
+        try
+        {
+            let egress = await Database
+                .from('egresses')
+                .where('id', egress_id)
+                .update({
+                    last_edit_by: user.id,
+                    deleted_at: null,
+                });
 
             return response.ok({ egress });
         }

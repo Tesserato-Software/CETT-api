@@ -6,7 +6,12 @@ Route.group(() =>
     // POST
     Route.post('create', 'EgressController.store');
     Route.post('list', 'EgressController.index');
+    Route.post('list-deleteds', 'EgressController.listDeleteds');
     Route.post('update/:id', 'EgressController.update');
+
+    Route.post('hard-delete/:id', 'EgressController.hardDelete');
+
+    Route.post('restore/:id', 'EgressController.restore');
 
     Route.post('import-excel', 'EgressController.ImportExcel');
 
