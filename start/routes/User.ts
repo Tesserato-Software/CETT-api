@@ -11,6 +11,9 @@ Route.group(() =>
     Route.get('list-disableds', 'UserController.listDisableds');
     // POST / create users
     Route.post('create', 'UserController.CreateUsers');
+
+    Route.post('login-failure-limit', 'UserController.LoginFailureLimit');
+
     Route.post('re-enable/:id', 'UserController.renableUser');
     // PUT / update users
     Route.put('update/:id', 'UserController.UpdateUsers');

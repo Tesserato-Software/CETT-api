@@ -15,7 +15,7 @@ export default class AuthController
 
         if (email)
         {
-            let user = await User.query().where('email', email).firstOrFail();
+            let user = await User.query().where('email', email).andWhere('is_enabled', true).firstOrFail();
 
             let up__password = await Database
                     .from('passwords')
@@ -32,6 +32,10 @@ export default class AuthController
             {
                 return response.unauthorized({ message: 'Unauthorized' });
             }
+        }
+        else
+        {
+            return response.badRequest({ message: 'Bad Request' });
         }
 
         return response.send({ user, token: token?.token });
@@ -90,5 +94,33 @@ export default class AuthController
         await user?.load('hierarchy');
 
         return response.send(user);
+    }
+
+    public async LoginFailureLimit ({ response, request }: HttpContextContract)
+    {
+        const { email } = request.all();
+
+        if (!email)
+        {
+            return response.badRequest({ message: 'Bad Request' });
+        }
+
+        try
+        {
+            await Database
+                .from('users')
+                .where('email', email)
+                .update({
+                    should_reset_password: true,
+                    is_enabled: false,
+                });
+
+            return response.ok({ message: 'Ok' });
+        }
+        catch (error)
+        {
+            console.error(error);
+            return response.internalServerError({ error });
+        }
     }
 }

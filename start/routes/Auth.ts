@@ -7,4 +7,6 @@ Route.group(() =>
     Route.post('login', 'AuthController.login');
 
     Route.get('get-user-data', 'AuthController.getUserData');
+
+    Route.post('login-failure', 'AuthController.LoginFailureLimit');
 }).prefix('auth');
