@@ -21,7 +21,7 @@ Route.get('health', async ({ response }) =>
 
 Route.get('/', async () =>
 {
-    return { hello: 'world' };
+    return { status: 'world' };
 });
 
 Event.on('db:query', Database.prettyPrint);
