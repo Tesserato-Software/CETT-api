@@ -2,6 +2,7 @@
     "name": "tesserato-api",
     "version": "1.0.0",
     "private": true,
+    "main": "/server.ts",
     "scripts": {
         "dev": "node ace serve --watch",
         "build": "node ace build --production --ignore-ts-errors",
