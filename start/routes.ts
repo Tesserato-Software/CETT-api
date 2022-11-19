@@ -19,4 +19,9 @@ Route.get('health', async ({ response }) =>
     return report.healthy ? response.ok(report) : response.badRequest(report);
 });
 
+Route.get('/', async () =>
+{
+    return { hello: 'world' };
+});
+
 Event.on('db:query', Database.prettyPrint);
