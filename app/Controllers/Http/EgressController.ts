@@ -35,6 +35,7 @@ export default class EgressController
                 .query()
                 .select('egresses.*')
                 .where('egresses.school_id', user.school_id)
+                .andWhereNull('egresses.deleted_at')
                 .groupBy('egresses.id')
                 .if((order), query =>
                 {

@@ -10,6 +10,7 @@ Route.group(() =>
     Route.post('update/:id', 'EgressController.update');
 
     Route.post('hard-delete/:id', 'EgressController.hardDelete');
+    Route.post('delete/:id', 'EgressController.destroy');
 
     Route.post('restore/:id', 'EgressController.restore');
 
@@ -23,9 +24,4 @@ Route.group(() =>
     Route.get('dashboard-dettach-archive/:id', 'EgressController.DashboardDettachArchive');
     Route.get('list', 'EgressController.index');
     Route.get('show/:id', 'EgressController.show');
-
-    // DELETE
-    Route.delete('delete/:id', 'EgressController.destroy');
-
-    // PATCH
 }).prefix('egress').middleware(['auth']);
