@@ -141,6 +141,7 @@ export default class ArchiveController
                         'egresses.id'
                     )
                     .where('egresses.school_id', user.school_id)
+                    .andWhereNull('egresses.deleted_at')
                     .groupBy('egresses.id');
 
             return response.ok({ archives, egresses });
@@ -250,6 +251,7 @@ export default class ArchiveController
                     )
                     .where('egresses.school_id', user.school_id)
                     .andWhere('egresses.archive_id',archive_id)
+                    .andWhereNull('egresses.deleted_at')
                     .groupBy('egresses.id');
 
             return response.ok({archives, egresses});
