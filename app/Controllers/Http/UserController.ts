@@ -256,8 +256,20 @@ export default class UserController
         try
         {
             let users = await Database.from('users')
-                .where('school_id', user.school_id)
-                .andWhere('is_enabled', false);
+                .select(
+                    'users.id',
+                    'users.full_name',
+                    'users.email',
+                    Database.raw(`
+                        json_agg(
+                            hierarchies.*
+                        ) AS hierarchy
+                    `)
+                )
+                .where('users.school_id', user.school_id)
+                .andWhere('users.is_enabled', false)
+                .innerJoin('hierarchies', 'hierarchies.id', 'users.hierarchy_id')
+                .groupBy('users.id');
 
             return response.ok(users);
         }
@@ -332,6 +344,7 @@ export default class UserController
                     `)
                 )
                 .where('users.school_id', user.school_id)
+                .andWhere('users.is_enabled', true)
                 .innerJoin('hierarchies', 'hierarchies.id', 'users.hierarchy_id')
                 .groupBy('users.id');
 
