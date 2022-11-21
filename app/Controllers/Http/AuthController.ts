@@ -30,7 +30,7 @@ export default class AuthController
             }
             else
             {
-                return response.unauthorized({ message: 'Unauthorized' });
+                return response.unauthorized({ message: 'Unauthorized', up__unhashed });
             }
         }
         else
