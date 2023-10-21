@@ -23,7 +23,7 @@ export default class MakeDev extends BaseSeeder
         let user = await User
             .create({
                 full_name: 'DEV',
-                email: `dev@dev.com${hierarchy.id}`,
+                email: 'dev@dev.com',
                 hierarchy_id: hierarchy.id,
                 school_id: dev_school.id,
                 is_enabled: true,
