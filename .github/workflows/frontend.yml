@@ -59,7 +59,7 @@ jobs:
       run: yarn install
 
     - name: Build
-      run: node ace build
+      run: node ace build --production
 
     - name: Deploy to VPS
       uses: easingthemes/ssh-deploy@main
