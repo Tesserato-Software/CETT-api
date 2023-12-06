@@ -59,13 +59,12 @@ jobs:
       run: yarn install
 
     - name: Build
-      run: node ace build --production
+      run: yarn run build
 
     - name: Deploy to VPS
       uses: easingthemes/ssh-deploy@main
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        ARGS: "-rlgoDzvc -i --delete"
         SOURCE: "build/"
         REMOTE_HOST: ${{ secrets.SSH_HOST }}
         REMOTE_USER: ${{ secrets.SSH_USERNAME }}
