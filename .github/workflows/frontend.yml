@@ -58,15 +58,11 @@ jobs:
     - name: Install Dependencies
       run: yarn install
 
-    - name: Build
-      run: yarn run build
-
     - name: Deploy to VPS
       uses: easingthemes/ssh-deploy@main
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        SOURCE: "build/"
         REMOTE_HOST: ${{ secrets.SSH_HOST }}
         REMOTE_USER: ${{ secrets.SSH_USERNAME }}
         TARGET: ${{ secrets.REMOTE_TARGET }}
-        SCRIPT_AFTER: "cd ${{ secrets.REMOTE_TARGET }} && yarn install --production && pm2 start server.js --name cett-backend && pm2 startup && pm2 save"
+        SCRIPT_AFTER: "cd ${{ secrets.REMOTE_TARGET }} && yarn install && cd build && yarn install --production && pm2 start server.js --name cett-backend && pm2 startup && pm2 save"
