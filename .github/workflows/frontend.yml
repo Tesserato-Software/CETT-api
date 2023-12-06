@@ -43,7 +43,7 @@ jobs:
         node-version: 18
 
     - name: Install Dependencies
-      run: yarn install --production
+      run: yarn install
 
     - name: Generate .env
       run: |
